@@ -30,25 +30,22 @@ WORKDIR /home/wine
 USER wine
 
 # setup wine
-ENV WINEARCH win32
-RUN winetricks win7
-RUN xvfb-run winetricks --unattended vcrun6
-RUN winetricks --unattended corefonts
-
+ENV WINEARCH win64
+RUN winetricks win10
 RUN wget https://dl.winehq.org/wine/wine-mono/4.7.3/wine-mono-4.7.3.msi && \
     wine msiexec /i wine-mono-4.7.3.msi && \
     rm *.msi
-
-RUN winetricks win7
+RUN winetricks win10
 RUN wineboot -r
 RUN wine cmd.exe /c echo '%ProgramFiles%'
 
+# bring over the snapshot
 ADD CMP CMP
 USER root
 RUN chown -R wine:wine CMP
 USER wine
 
-# setup msvc
+# import the snapshot
 RUN cd .wine/drive_c && \
     unzip $HOME/CMP/files.zip && \
     wine reg import $HOME/CMP/HKLM.reg && \
