@@ -19,7 +19,7 @@ RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/wine
     chmod +x /usr/local/bin/winetricks
 
 # tools used by wine
-RUN apt-get install -y cabextract p7zip-full winbind
+RUN apt-get install -y zip p7zip-full cabextract winbind
 
 # virtual display (because its windows of course)
 RUN apt-get install -y xvfb
@@ -42,5 +42,20 @@ RUN wget https://dl.winehq.org/wine/wine-mono/4.7.3/wine-mono-4.7.3.msi && \
 RUN winetricks win7
 RUN wineboot -r
 RUN wine cmd.exe /c echo '%ProgramFiles%'
+
+ADD CMP CMP
+USER root
+RUN chown -R wine:wine CMP
+USER wine
+
+# setup msvc
+RUN cd .wine/drive_c && \
+    unzip $HOME/CMP/files.zip && \
+    wine reg import $HOME/CMP/HKLM.reg && \
+    wine reg import $HOME/CMP/HKCU.reg && \
+    wine reg import $HOME/CMP/HKCR.reg && \
+    wine reg import $HOME/CMP/HKU.reg && \
+    wine reg import $HOME/CMP/HKCC.reg && \
+    rm -rf $HOME/CMP
 
 ENTRYPOINT [ "/usr/bin/wine", "cmd", "/c" ]
