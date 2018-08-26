@@ -67,3 +67,13 @@ RUN wineboot -r
 
 ADD dockertools/winecmd /usr/local/bin/winecmd
 ENTRYPOINT [ "/usr/local/bin/winecmd" ]
+
+# make sure we can compile
+ADD test test
+USER root
+RUN chown -R wine:wine test
+USER wine
+RUN cd test && \
+    winecmd cl helloworld.cpp && \
+    winecmd helloworld.exe && \
+    cd .. && rm -rf test
