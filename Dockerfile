@@ -39,7 +39,8 @@ RUN wineboot -r
 RUN wine cmd.exe /c echo '%ProgramFiles%'
 
 # bring over the snapshot
-ADD snapshots snapshots
+ARG MSVC
+ADD build/msvc$MSVC/snapshots snapshots
 USER root
 RUN chown -R wine:wine snapshots
 USER wine
@@ -64,4 +65,5 @@ RUN rm -rf $HOME/snapshots
 RUN winetricks win10
 RUN wineboot -r
 
-ENTRYPOINT [ "/usr/bin/wine", "cmd", "/c" ]
+ADD dockertools/winecmd /usr/local/bin/winecmd
+ENTRYPOINT [ "/usr/local/bin/winecmd" ]

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+cmd_bat=$HOME/.wine/drive_c/Windows/Temp/cmd.bat
+vcvars='"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64'
+
+echo "@echo off" > $cmd_bat
+echo "@call $vcvars" >> $cmd_bat
+echo "$@" >> $cmd_bat
+wine cmd /c call 'C:\Windows\Temp\cmd.bat'
+
+rm $cmd_bat
