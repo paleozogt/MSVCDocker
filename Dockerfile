@@ -35,24 +35,33 @@ RUN winetricks win10
 RUN wget https://dl.winehq.org/wine/wine-mono/4.7.3/wine-mono-4.7.3.msi && \
     wine msiexec /i wine-mono-4.7.3.msi && \
     rm *.msi
-RUN winetricks win10
 RUN wineboot -r
 RUN wine cmd.exe /c echo '%ProgramFiles%'
 
 # bring over the snapshot
-ADD CMP CMP
+ADD snapshots snapshots
 USER root
-RUN chown -R wine:wine CMP
+RUN chown -R wine:wine snapshots
 USER wine
 
-# import the snapshot
+# import the snapshot files
 RUN cd .wine/drive_c && \
-    unzip $HOME/CMP/files.zip && \
-    wine reg import $HOME/CMP/HKLM.reg && \
-    wine reg import $HOME/CMP/HKCU.reg && \
-    wine reg import $HOME/CMP/HKCR.reg && \
-    wine reg import $HOME/CMP/HKU.reg && \
-    wine reg import $HOME/CMP/HKCC.reg && \
-    rm -rf $HOME/CMP
+    unzip $HOME/snapshots/CMP/files.zip && \
+    wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
+
+# workaround for bug in wine's cmd that breaks msvc setup bat files
+# see https://bugs.winehq.org/show_bug.cgi?id=43337
+RUN cd .wine/drive_c && \
+    find . -iname vc\*.bat | xargs -Ifile cp "file" "file.orig" && \
+    find . -iname vc\*.bat | xargs -Ifile sed -i.bak 's/\(.*%ProgramFiles(x86)%.*\)//g' file && \
+    find . -iname vc\*.bat | xargs -Ifile sed -i.bak 's/.*if exist .* set/set/g' file && \
+    find . -iname vc\*.bat.bak | xargs -Ifile rm "file"
+
+# clean up
+RUN rm -rf $HOME/snapshots
+
+# reboot for luck
+RUN winetricks win10
+RUN wineboot -r
 
 ENTRYPOINT [ "/usr/bin/wine", "cmd", "/c" ]

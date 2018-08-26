@@ -51,7 +51,7 @@ Vagrant.configure("2") do |config|
 
             vmconfig.vm.provision "shell", path: "vagranttools/setup_basic.ps1"
 
-            outputdir = "\\\\vboxsvr\\vagrant\\msvc%s" % [ msvc ]
+            outputdir = "\\\\vboxsvr\\vagrant\\msvc%s\\snapshots" % [ msvc ]
             vmconfig.vm.provision "shell", path: "vagranttools/snapshot.bat", args: [ "$outputdir\\SNAPSHOT-01" ]
 
             if msvc == "test"
