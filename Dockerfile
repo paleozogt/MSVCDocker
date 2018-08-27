@@ -87,7 +87,18 @@ RUN wget http://download.qt.io/official_releases/jom/jom.zip -O jom.zip && \
     unzip $HOME/jom.zip && \
     rm $HOME/jom.zip
 
-ENV WINEPATH $CMAKE_WIN_PATH;$JOM_WIN_PATH
+# gnuwin32 tools
+ARG GNUWIN32_WIN_PATH=C:\\gnuwin32\\bin
+RUN cd ".wine/drive_c" && \
+    mkdir -p gnuwin32/bin
+
+# install which
+RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
+    cd ".wine/drive_c/gnuwin32" && \
+    unzip $HOME/which.zip && \
+    rm $HOME/which.zip
+
+ENV WINEPATH $CMAKE_WIN_PATH;$JOM_WIN_PATH;$GNUWIN32_WIN_PATH
 
 # test tools
 RUN winecmd cmake --version
