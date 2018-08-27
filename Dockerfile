@@ -116,3 +116,5 @@ RUN cd test && \
     winecmd cl helloworld.cpp && \
     winecmd helloworld.exe && \
     cd .. && rm -rf test
+
+ENV WINEDEBUG=-all
