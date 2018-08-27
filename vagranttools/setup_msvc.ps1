@@ -44,10 +44,7 @@ If ($msvc_ver -eq "12") {
 choco install -y vswhere
 
 echo "vcvars32 $vcvars32"
-ls $vcvars32
-
 echo "vcvars64 $vcvars64"
-ls $vcvars64
 
 # env vars to easily invoke vcvars
 [Environment]::SetEnvironmentVariable("VCVARS32", $vcvars32, "Machine")
