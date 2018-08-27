@@ -58,6 +58,9 @@ RUN cd .wine/drive_c && \
     find . -iname vc\*.bat | xargs -Ifile sed -i.bak 's/.*if exist .* set/set/g' file && \
     find . -iname vc\*.bat.bak | xargs -Ifile rm "file"
 
+# 64-bit linking has trouble finding cvtres, so help it out
+RUN find .wine -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
+
 # clean up
 RUN rm -rf $HOME/snapshots
 
