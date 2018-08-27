@@ -6,3 +6,5 @@ build
 *.box
 *.exe
 *.obj
+*.tar.*
+*.src
