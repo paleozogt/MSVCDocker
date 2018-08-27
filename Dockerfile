@@ -68,6 +68,31 @@ RUN wineboot -r
 ADD dockertools/winecmd /usr/local/bin/winecmd
 ENTRYPOINT [ "/usr/local/bin/winecmd" ]
 
+# install cmake
+ARG CMAKE_SERIES_VER=3.12
+ARG CMAKE_VERS=$CMAKE_SERIES_VER.1
+ARG CMAKE_WIN_PATH=C:\\Program\ Files\\CMake\\bin
+RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-win64-x64.zip -O cmake.zip && \
+    cd ".wine/drive_c/Program Files" && \
+    unzip $HOME/cmake.zip && \
+    mv cmake-* CMake && \
+    rm $HOME/cmake.zip
+
+# install jom
+ARG JOM_VERSION=1.1.2
+ARG JOM_WIN_PATH=C:\\jom
+RUN wget http://download.qt.io/official_releases/jom/jom.zip -O jom.zip && \
+    cd ".wine/drive_c" && \
+    mkdir jom && cd jom && \
+    unzip $HOME/jom.zip && \
+    rm $HOME/jom.zip
+
+ENV WINEPATH $CMAKE_WIN_PATH;$JOM_WIN_PATH
+
+# test tools
+RUN winecmd cmake --version
+RUN winecmd jom /VERSION
+
 # make sure we can compile
 ADD test test
 USER root
