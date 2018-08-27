@@ -1,6 +1,7 @@
 @echo on
 set CURR_DIR=%CD%
 set SNAPSHOT_DIR=%1
+@echo snapshotting to %SNAPSHOT_DIR%
 
 cd %HOMEDRIVE%\
 

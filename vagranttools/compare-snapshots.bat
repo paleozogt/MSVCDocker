@@ -4,6 +4,8 @@ set SNAPSHOT1=%1
 set SNAPSHOT2=%2
 set OUTPUT=%3
 
+@echo "comparing %SNAPSHOT1% to %SNAPSHOT2% : %OUTPUT%"
+
 mkdir %OUTPUT%
 
 regdiff %SNAPSHOT1%\HKLM.reg %SNAPSHOT2%\HKLM.reg /DIFF %OUTPUT%\HKLM.reg

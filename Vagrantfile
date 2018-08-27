@@ -51,8 +51,12 @@ Vagrant.configure("2") do |config|
 
             vmconfig.vm.provision "shell", path: "vagranttools/setup_basic.ps1"
 
-            outputdir = "\\\\vboxsvr\\vagrant\\msvc%s\\snapshots" % [ msvc ]
-            vmconfig.vm.provision "shell", path: "vagranttools/snapshot.bat", args: [ "$outputdir\\SNAPSHOT-01" ]
+            outputdir = "\\\\vboxsvr\\vagrant\\msvc#{msvc}\\snapshots"
+            snapshot1dir= "#{outputdir}\\SNAPSHOT-01"
+            snapshot2dir= "#{outputdir}\\SNAPSHOT-02"
+            cmpdir= "#{outputdir}\\CMP"
+
+            vmconfig.vm.provision "shell", path: "vagranttools/snapshot.bat", args: [ snapshot1dir ]
 
             if msvc == "test"
                 vmconfig.vm.provision "shell", inline: "choco install -y firefox"
@@ -61,12 +65,10 @@ Vagrant.configure("2") do |config|
             end
             vmconfig.vm.provision :reload
 
-            vmconfig.vm.provision "shell", path: "vagranttools/snapshot.bat", args: [ "$outputdir\\SNAPSHOT-02" ]
+            vmconfig.vm.provision "shell", path: "vagranttools/snapshot.bat", args: [ snapshot2dir ]
 
             vmconfig.vm.provision "shell", path: "vagranttools/compare-snapshots.bat", 
-                                           args: [ "$outputdir\\SNAPSHOT-01", 
-                                                   "$outputdir\\SNAPSHOT-02",
-                                                   "$outputdir\\CMP" ]
+                                           args: [ snapshot1dir, snapshot2dir, cmpdir ]
         end
     end
 end
