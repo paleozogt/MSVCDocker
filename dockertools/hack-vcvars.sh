@@ -18,6 +18,11 @@ sed -i.bak 's/\(\s\)*if .*"" \(.*set\) /\1\2 /g' "$batfile"
 # see https://bugs.winehq.org/show_bug.cgi?id=45722
 sed -i.bak 's/^call :parse_loop/call :parse_argument %__VCVARSALL_ARGS_LIST%/g' "$batfile"
 
+# workaround for-loop whitespace bug
+# see https://bugs.winehq.org/show_bug.cgi?id=45731
+sed -i.bak 's/\(for.*\)( '\''/\1('\''/g' "$batfile"
+sed -i.bak 's/\(for.*\)'\'' )/\1'\'')/g' "$batfile"
+
 # workaround trailing-slash bug in wine's cmd
 # see https://bugs.winehq.org/show_bug.cgi?id=45725
 sed -i.bak 's/\(.*if .*\)\\" /\1" /g' "$batfile"
