@@ -50,13 +50,13 @@ RUN cd .wine/drive_c && \
     unzip $HOME/snapshots/CMP/files.zip && \
     wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
 
-# workaround for bug in wine's cmd that breaks msvc setup bat files
-# see https://bugs.winehq.org/show_bug.cgi?id=43337
-RUN cd .wine/drive_c && \
-    find . -iname vc\*.bat | xargs -Ifile cp "file" "file.orig" && \
-    find . -iname vc\*.bat | xargs -Ifile sed -i.bak 's/\(.*%ProgramFiles(x86)%.*\)//g' file && \
-    find . -iname vc\*.bat | xargs -Ifile sed -i.bak 's/.*if exist .* set/set/g' file && \
-    find . -iname vc\*.bat.bak | xargs -Ifile rm "file"
+# workaround bugs in wine's cmd that prevents msvc setup bat files from working
+ADD dockertools/hack-vcvars.sh hack-vcvars.sh
+USER root
+RUN chown wine:wine *.sh
+USER wine
+RUN find .wine/drive_c -iname vc\*.bat | xargs -Ifile $HOME/hack-vcvars.sh "file" && \
+    find .wine/drive_c -iname vs\*.bat | xargs -Ifile $HOME/hack-vcvars.sh "file"
 
 # 64-bit linking has trouble finding cvtres, so help it out
 RUN find .wine -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
