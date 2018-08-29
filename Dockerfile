@@ -55,8 +55,9 @@ ADD dockertools/hack-vcvars.sh hack-vcvars.sh
 USER root
 RUN chown wine:wine *.sh
 USER wine
-RUN find .wine/drive_c -iname vc\*.bat | xargs -Ifile $HOME/hack-vcvars.sh "file" && \
-    find .wine/drive_c -iname vs\*.bat | xargs -Ifile $HOME/hack-vcvars.sh "file"
+RUN find .wine/drive_c -iname v[cs]\*.bat | xargs -Ifile $HOME/hack-vcvars.sh "file" && \
+    find .wine/drive_c -iname win\*.bat | xargs -Ifile $HOME/hack-vcvars.sh "file" && \
+    rm *.sh
 
 # 64-bit linking has trouble finding cvtres, so help it out
 RUN find .wine -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
