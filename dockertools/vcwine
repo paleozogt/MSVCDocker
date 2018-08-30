@@ -7,6 +7,7 @@ set +a
 
 # append the imported windows path to the WINEPATH
 export WINEPATH="$WINEPATH;$Path"
+export -n Path
 
 # pass along script args to wine
 wine $@
