@@ -56,7 +56,7 @@ RUN wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
 USER root
 ADD dockertools/vcwine /usr/local/bin/vcwine
 ADD dockertools/diffenv /usr/local/bin/diffenv
-RUN diffenv /home/wine/snapshots/SNAPSHOT-02/env.txt /home/wine/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcvars
+RUN diffenv /home/wine/snapshots/SNAPSHOT-01/env.txt /home/wine/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcvars
 USER wine
 
 # 64-bit linking has trouble finding cvtres, so help it out
