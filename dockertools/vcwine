@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# bring in the msvc vars as environment variables so they'll be picked up by wine
+set -a
+source /etc/vcvars
+set +a
+
+# append the imported windows path to the WINEPATH
+export WINEPATH="$WINEPATH;$Path"
+
+# pass along script args to wine
+wine $@

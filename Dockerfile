@@ -19,7 +19,7 @@ RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/wine
     chmod +x /usr/local/bin/winetricks
 
 # tools used by wine
-RUN apt-get install -y zip p7zip-full cabextract winbind
+RUN apt-get install -y zip p7zip-full cabextract winbind dos2unix
 
 # virtual display (because its windows of course)
 RUN apt-get install -y xvfb
@@ -38,7 +38,7 @@ RUN wget https://dl.winehq.org/wine/wine-mono/4.7.3/wine-mono-4.7.3.msi && \
 RUN wineboot -r
 RUN wine cmd.exe /c echo '%ProgramFiles%'
 
-# bring over the snapshot
+# bring over the snapshots
 ARG MSVC
 ADD build/msvc$MSVC/snapshots snapshots
 USER root
@@ -47,17 +47,17 @@ USER wine
 
 # import the snapshot files
 RUN cd .wine/drive_c && \
-    unzip $HOME/snapshots/CMP/files.zip && \
-    wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
+    unzip $HOME/snapshots/CMP/files.zip
 
-# workaround bugs in wine's cmd that prevents msvc setup bat files from working
-ADD dockertools/hack-vcvars.sh hack-vcvars.sh
+# import registry snapshot
+RUN wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
+
+# vcwine
 USER root
-RUN chown wine:wine *.sh
+ADD dockertools/vcwine /usr/local/bin/vcwine
+ADD dockertools/diffenv /usr/local/bin/diffenv
+RUN diffenv /home/wine/snapshots/SNAPSHOT-02/env.txt /home/wine/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcvars
 USER wine
-RUN find .wine/drive_c -iname v[cs]\*.bat | xargs -Ifile $HOME/hack-vcvars.sh "file" && \
-    find .wine/drive_c -iname win\*.bat | xargs -Ifile $HOME/hack-vcvars.sh "file" && \
-    rm *.sh
 
 # 64-bit linking has trouble finding cvtres, so help it out
 RUN find .wine -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
@@ -68,9 +68,6 @@ RUN rm -rf $HOME/snapshots
 # reboot for luck
 RUN winetricks win10
 RUN wineboot -r
-
-ADD dockertools/winecmd /usr/local/bin/winecmd
-ENTRYPOINT [ "/usr/local/bin/winecmd" ]
 
 # install cmake
 ARG CMAKE_SERIES_VER=3.12
@@ -119,3 +116,5 @@ RUN cd test && \
     cd .. && rm -rf test
 
 ENV WINEDEBUG=-all
+
+ENTRYPOINT [ "/usr/local/bin/vcwine" ]

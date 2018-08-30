@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -u
+
+ENV1="/tmp/env1"
+ENV2="/tmp/env2"
+ENVTO="$3"
+
+# convert line endings
+dos2unix -q -n "$1" $ENV1
+dos2unix -q -n "$2" $ENV2
+
+# remove the first path (we'll just take the 2nd one as-is)
+sed -i.bak '/Path=.*/d' $ENV1
+
+# sort the vars for easy diffing
+sort $ENV1 -o $ENV1
+sort $ENV2 -o $ENV2
+
+# diff the env vars
+diff --unchanged-group-format=  $ENV1 $ENV2 > "$ENVTO"
+
+# comment out any vars with parens (e.g., "ProgramFiles(x86)")
+sed -i.bak 's/\(.*(.*=\)/# \1/g' "$ENVTO"
+
+# remove unnecessary vars leftover from the session that created them
+sed -i.bak '/CURR_DIR=.*/d' "$ENVTO"
+sed -i.bak '/SNAPSHOT_DIR=.*/d' "$ENVTO"
+
+# surround the values in single quotes
+sed -i.bak 's/=\(.*\)/=\x27\1\x27/g' "$ENVTO"
+
+# remove tools from the path used to make the vagrant snapshot
+sed -i.bak 's/C:\\Program Files (x86)\\GnuWin32\\bin;//g' "$ENVTO"
+sed -i.bak 's/C:\\ProgramData\\chocolatey\\bin;//g' "$ENVTO"
+
+# remove unnecessary/redundant stuff from the path
+sed -i.bak 's/C:\\Windows;//g' "$ENVTO"
+sed -i.bak 's/C:\\Windows\\system32;//g' "$ENVTO"
+sed -i.bak 's/C:\\Windows\\System32\\Wbem;//g' "$ENVTO"
+sed -i.bak 's/C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;//g' "$ENVTO"
+
+rm $ENV1
+rm $ENV2
+rm "$ENVTO.bak"
