@@ -1,5 +1,6 @@
 param (
-    [Parameter(Mandatory=$true)][string]$msvc_ver
+    [Parameter(Mandatory=$true)][string]$msvc_ver,
+    [Parameter(Mandatory=$true)][string]$output_dir
  )
 
 If ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
@@ -46,7 +47,14 @@ choco install -y vswhere
 echo "vcvars32 $vcvars32"
 echo "vcvars64 $vcvars64"
 
-# env vars to easily invoke vcvars
-[Environment]::SetEnvironmentVariable("VCVARS32", $vcvars32, "Machine")
-[Environment]::SetEnvironmentVariable("VCVARS64", $vcvars64, "Machine")
+mkdir -Force "$output_dir"
+
+$vcvars32_export="$output_dir\vcvars32.txt"
+echo "exporting $vcvars32_export"
+cmd /c "$vcvars32 && set > $vcvars32_export"
+
+$vcvars64_export="$output_dir\vcvars64.txt"
+echo "exporting $vcvars64_export"
+cmd /c "$vcvars64 && set > $vcvars64_export"
+
 refreshenv

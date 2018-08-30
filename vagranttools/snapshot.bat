@@ -4,8 +4,10 @@ set SNAPSHOT_DIR=%1
 @echo snapshotting to %SNAPSHOT_DIR%
 
 cd %HOMEDRIVE%\
-
 mkdir %SNAPSHOT_DIR%
+
+set > %SNAPSHOT_DIR%\env.txt
+
 reg export HKLM %SNAPSHOT_DIR%\HKLM.reg /y
 reg export HKCU %SNAPSHOT_DIR%\HKCU.reg /y
 reg export HKCR %SNAPSHOT_DIR%\HKCR.reg /y

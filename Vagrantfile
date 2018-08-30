@@ -61,7 +61,8 @@ Vagrant.configure("2") do |config|
             if msvc == "test"
                 vmconfig.vm.provision "shell", inline: "choco install -y firefox"
             else
-                vmconfig.vm.provision "shell", path: "vagranttools/setup_msvc.ps1", args: [ "-msvc_ver", msvc ]
+                vmconfig.vm.provision "shell", path: "vagranttools/setup_msvc.ps1", 
+                                               args: [ "-msvc_ver", msvc, "-output_dir", snapshot2dir ]
             end
             vmconfig.vm.provision :reload
 
