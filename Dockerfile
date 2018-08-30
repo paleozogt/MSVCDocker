@@ -62,6 +62,35 @@ USER wine
 # 64-bit linking has trouble finding cvtres, so help it out
 RUN find .wine -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
 
+# make a tools dir
+RUN mkdir -p .wine/drive_c/tools/bin
+ENV WINEPATH C:\\tools\\bin
+
+# install cmake
+ARG CMAKE_SERIES_VER=3.12
+ARG CMAKE_VERS=$CMAKE_SERIES_VER.1
+RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-win64-x64.zip -O cmake.zip && \
+    unzip $HOME/cmake.zip && \
+    mv cmake-*/* .wine/drive_c/tools && \
+    rm -rf cmake*
+
+# install jom
+RUN wget http://download.qt.io/official_releases/jom/jom.zip -O jom.zip && \
+    unzip -d jom $HOME/jom.zip && \
+    mv jom/jom.exe .wine/drive_c/tools/bin && \
+    rm -rf jom*
+
+# install which (for easy path debugging)
+RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
+    cd ".wine/drive_c/tools" && \
+    unzip $HOME/which.zip && \
+    rm $HOME/which.zip
+
+# test the tools
+RUN vcwine cmake --version
+RUN vcwine jom /VERSION
+RUN vcwine which --version
+
 # clean up
 RUN rm -rf $HOME/snapshots
 
@@ -69,50 +98,14 @@ RUN rm -rf $HOME/snapshots
 RUN winetricks win10
 RUN wineboot -r
 
-# install cmake
-ARG CMAKE_SERIES_VER=3.12
-ARG CMAKE_VERS=$CMAKE_SERIES_VER.1
-ARG CMAKE_WIN_PATH=C:\\Program\ Files\\CMake\\bin
-RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-win64-x64.zip -O cmake.zip && \
-    cd ".wine/drive_c/Program Files" && \
-    unzip $HOME/cmake.zip && \
-    mv cmake-* CMake && \
-    rm $HOME/cmake.zip
-
-# install jom
-ARG JOM_VERSION=1.1.2
-ARG JOM_WIN_PATH=C:\\jom
-RUN wget http://download.qt.io/official_releases/jom/jom.zip -O jom.zip && \
-    cd ".wine/drive_c" && \
-    mkdir jom && cd jom && \
-    unzip $HOME/jom.zip && \
-    rm $HOME/jom.zip
-
-# gnuwin32 tools
-ARG GNUWIN32_WIN_PATH=C:\\gnuwin32\\bin
-RUN cd ".wine/drive_c" && \
-    mkdir -p gnuwin32/bin
-
-# install which
-RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
-    cd ".wine/drive_c/gnuwin32" && \
-    unzip $HOME/which.zip && \
-    rm $HOME/which.zip
-
-ENV WINEPATH $CMAKE_WIN_PATH;$JOM_WIN_PATH;$GNUWIN32_WIN_PATH
-
-# test tools
-RUN winecmd cmake --version
-RUN winecmd jom /VERSION
-
 # make sure we can compile
 ADD test test
 USER root
 RUN chown -R wine:wine test
 USER wine
 RUN cd test && \
-    winecmd cl helloworld.cpp && \
-    winecmd helloworld.exe && \
+    vcwine cl helloworld.cpp && \
+    vcwine helloworld.exe && \
     cd .. && rm -rf test
 
 ENV WINEDEBUG=-all
