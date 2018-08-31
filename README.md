@@ -86,7 +86,8 @@ CMake and JOM are also included, so you can build the Hello World that way:
 -- Generating done
 -- Build files have been written to: Z:/Users/asimmons/Development/test/MSVCDocker/build/test2
 
-✗ docker run -v$PWD:$PWD -w$PWD/build/test2 --rm -t -i msvc:15 jom                            jom 1.1.2 - empower your cores
+✗ docker run -v$PWD:$PWD -w$PWD/build/test2 --rm -t -i msvc:15 jom
+jom 1.1.2 - empower your cores
 jom: parallel job execution disabled for Makefile
 Scanning dependencies of target helloworld
 [ 50%] Building CXX object CMakeFiles/helloworld.dir/helloworld.cpp.obj
