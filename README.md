@@ -67,7 +67,9 @@ hello world from win x86_64 msvc v1915
 
 [CMake](https://cmake.org/) and [JOM](https://wiki.qt.io/Jom) are also included, so you can build Hello World that way:
 ```
-✗ docker run -v$PWD:$PWD -w$PWD/build/test2 --rm -t -i msvc:15 cmake ../../test -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM"
+✗ mkdir -p build/test
+
+✗ docker run -v$PWD:$PWD -w$PWD/build/test --rm -t -i msvc:15 cmake ../../test -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM"
 -- The C compiler identification is MSVC 19.15.26726.0
 -- The CXX compiler identification is MSVC 19.15.26726.0
 -- Check for working C compiler: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.15.26726/bin/Hostx64/x64/cl.exe
@@ -84,9 +86,9 @@ hello world from win x86_64 msvc v1915
 -- Detecting CXX compile features - done
 -- Configuring done
 -- Generating done
--- Build files have been written to: Z:/Users/asimmons/Development/test/MSVCDocker/build/test2
+-- Build files have been written to: Z:/Users/asimmons/Development/test/MSVCDocker/build/test
 
-✗ docker run -v$PWD:$PWD -w$PWD/build/test2 --rm -t -i msvc:15 jom
+✗ docker run -v$PWD:$PWD -w$PWD/build/test --rm -t -i msvc:15 jom
 jom 1.1.2 - empower your cores
 jom: parallel job execution disabled for Makefile
 Scanning dependencies of target helloworld
@@ -95,7 +97,7 @@ helloworld.cpp
 [100%] Linking CXX executable helloworld.exe
 [100%] Built target helloworld
 
-✗ docker run -v$PWD:$PWD -w$PWD/build/test2 --rm -t -i msvc:15 helloworld.exe
+✗ docker run -v$PWD:$PWD -w$PWD/build/test --rm -t -i msvc:15 helloworld.exe
 hello world from win x86_64 msvc v1915
 
 ```
