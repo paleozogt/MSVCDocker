@@ -44,7 +44,7 @@ Directory of Z:\Users\asimmons\Development\test\MSVCDocker
        6 directories     97,359,118,336 bytes free
 ```
 
-Compiling the Hello World test:
+Compiling a Hello World:
 ```
 ✗ docker run -v$PWD:$PWD -w$PWD --rm -t -i msvc:15 cl test/helloworld.cpp 
 Microsoft (R) C/C++ Optimizing Compiler Version 19.15.26726 for x64
@@ -59,13 +59,13 @@ Copyright (C) Microsoft Corporation.  All rights reserved.
 helloworld.obj 
 ```
 
-Running the Hello World EXE:
+Running Hello World:
 ```
 ✗ docker run -v$PWD:$PWD -w$PWD --rm -t -i msvc:15 helloworld.exe        
 hello world from win x86_64 msvc v1915
 ```
 
-CMake and JOM are also included, so you can build the Hello World that way:
+[CMake](https://cmake.org/) and [JOM](https://wiki.qt.io/Jom) are also included, so you can build Hello World that way:
 ```
 ✗ docker run -v$PWD:$PWD -w$PWD/build/test2 --rm -t -i msvc:15 cmake ../../test -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM"
 -- The C compiler identification is MSVC 19.15.26726.0
