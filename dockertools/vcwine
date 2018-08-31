@@ -5,9 +5,17 @@ set -a
 source /etc/vcvars
 set +a
 
-# append the imported windows path to the WINEPATH
+# append the imported windows Path (distinct from PATH) to the WINEPATH
 export WINEPATH="$WINEPATH;$Path"
 export -n Path
+
+# something is wonky with the way LINK.EXE reads the %LIB% env var;
+# this harmless munging of %LIB% seems to make it happy
+if [[ $VCINSTALLDIR = *"2017"* ]]; then
+    export LIB="$LIB$LIB"
+else
+    export LIB="${LIB//;/;$VCINSTALLDIR;}"
+fi
 
 # pass along script args to wine
 wine $@
