@@ -2,7 +2,7 @@
 
 CI with MSVC is unnecessarily difficult. Can't we just use Docker?
 
-It turns out we can-- by running MSVC in [Wine](https://www.winehq.org/).  Lots of folks have tried to do this over the years (see References below), but the setup is involved and fiddly.  But scripting complicated setups is what Docker was made for!
+It turns out we can-- by running MSVC in [Wine](https://www.winehq.org/).  Lots of folks have tried to do this over the years [[1](README.md#references)], but the setup is involved and fiddly.  But scripting complicated setups is what Docker was made for!
 
 The big blocker to getting MSVC in Wine is that even though the software itself works under Wine, the installers don't.  We dodge that problem by using [Vagrant](https://www.vagrantup.com/downloads.html) to drive a real MSVC installer in [VirtualBox](https://www.virtualbox.org/wiki/Downloads), export a snapshot of the installation, and then the Docker build copies the snapshot into Wine.
 
@@ -106,7 +106,7 @@ hello world from win x86_64 msvc v1915
  * [Vagrant](https://www.vagrantup.com/downloads.html)
  * [Docker](https://www.docker.com/get-started)
 
-#### References
+### References
  * https://hackernoon.com/a-c-hello-world-and-a-glass-of-wine-oh-my-263434c0b8ad
  * https://dekken.github.io/2015/12/29/MSVC2015-on-Debian-with-Wine-and-Maiken.html
  * http://kegel.com/wine/cl-howto.html
