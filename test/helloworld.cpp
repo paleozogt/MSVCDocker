@@ -2,7 +2,7 @@
 #include <string>
 
 int main() {
-    std::string plat;
+    std::string plat= "unknown";
     #if defined(_WIN32)
         plat= "win";
     #elif defined(__APPLE__)
@@ -11,7 +11,7 @@ int main() {
         plat= "unix";
     #endif
 
-    std::string arch;
+    std::string arch= "unknown";
     #if defined(__i386__) || defined(_M_IX86)
         arch="x86";
     #elif defined(__x86_64__) || defined(_M_X64)
@@ -22,8 +22,19 @@ int main() {
         arch="arm64";
     #endif
 
+    std::string compiler= "unknown";
+    int compilerVer= 0;
+    #if defined(__GNUC__)
+        compiler= "gnu";
+        compilerVer= __GNUC__;
+    #elif defined(_MSC_VER)
+        compiler= "msvc";
+        compilerVer= _MSC_VER;
+    #endif
+
     std::cout << "hello world from "
-              << plat << " " << arch << std::endl;
+              << plat << " " << arch << " "
+              << compiler << " v" << compilerVer << std::endl;
 
     return 0;
 }
