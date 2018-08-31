@@ -4,7 +4,7 @@ CI with MSVC is unnecessarily difficult. Can't we just use Docker?
 
 It turns out we can-- by running MSVC in [Wine](https://www.winehq.org/).  Lots of folks have tried to do this over the years [[1](README.md#references)], but the setup is involved and fiddly.  But scripting complicated setups is what Docker was made for!
 
-The big blocker to getting MSVC in Wine is that even though the software itself works under Wine, the installers don't.  We dodge that problem by using [Vagrant](https://www.vagrantup.com/downloads.html) to drive a real MSVC installer in [VirtualBox](https://www.virtualbox.org/wiki/Downloads), export a snapshot of the installation, and then the Docker build copies the snapshot into Wine.
+The big blocker to getting MSVC in Wine is that even though the software itself works under Wine, the installers *don't*.  We dodge that problem by using [Vagrant](https://www.vagrantup.com/downloads.html) to drive the MSVC installer in a real Windows OS within [VirtualBox](https://www.virtualbox.org/wiki/Downloads), export a snapshot of the installation, and then the Docker build copies the snapshot into Wine.
 
 ### Building an Image
 
