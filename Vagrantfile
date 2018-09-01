@@ -28,6 +28,7 @@ Vagrant.configure("2") do |config|
             vmconfig.winrm.username = "vagrant"
             vmconfig.winrm.password = "vagrant"
             vmconfig.vm.communicator = "winrm"
+            vmconfig.vbguest.auto_update = false
 
             vmconfig.vm.provider :virtualbox do |v, override|
                 v.name = vmname
