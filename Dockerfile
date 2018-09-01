@@ -65,7 +65,7 @@ RUN find .wine -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
 # workaround bugs in wine's cmd that prevents msvc setup bat files from working
 ADD dockertools/hackvcvars hackvcvars
 USER root
-RUN chown wine:wine *.sh
+RUN chown wine:wine hackvcvars
 USER wine
 RUN find .wine/drive_c -iname v[cs]\*.bat | xargs -Ifile $HOME/hackvcvars "file" && \
     find .wine/drive_c -iname win\*.bat | xargs -Ifile $HOME/hackvcvars "file" && \
