@@ -1,4 +1,4 @@
-MSVC_VERS = 15 14 12
+MSVC_VERS = 15 14 12 11
 
 define build-targets
   snapshot$1: Vagrantfile

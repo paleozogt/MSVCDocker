@@ -9,7 +9,15 @@ If ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
     $programFilesX86= $env:ProgramFiles
 }
 
-If ($msvc_ver -eq "12") {
+If ($msvc_ver -eq "11") {
+    # sadly no "build tools" for 2012
+    choco install -y visualstudio2012wdx
+
+    $vcvarsbat="$programFilesX86\Microsoft Visual Studio 11.0\VC\vcvarsall.bat"
+    $vcvars32="`"$vcvarsbat`" x86"
+    $vcvars64="`"$vcvarsbat`" x86_amd64"
+
+} ElseIf ($msvc_ver -eq "12") {
     # sadly no "build tools" for 2013
     choco install -y visualstudioexpress2013windowsdesktop vs2013.4
 

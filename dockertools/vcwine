@@ -13,7 +13,9 @@ export -n Path
 # this harmless munging of %LIB% seems to make it happy
 if [[ $VCINSTALLDIR = *"2017"* ]]; then
     export LIB="$LIB$LIB"
-else
+elif [[ $VCINSTALLDIR = *"14.0"* ]]; then
+    export LIB="${LIB//;/;$VCINSTALLDIR;}"
+elif [[ $VCINSTALLDIR = *"12.0"* ]]; then
     export LIB="${LIB//;/;$VCINSTALLDIR;}"
 fi
 
