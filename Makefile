@@ -1,32 +1,17 @@
+MSVC_VERS = 15 14 12
 
-snapshot12: Vagrantfile
-	FIRSTBOOT=1 vagrant up win-msvc12
-	vagrant halt win-msvc12
-	vagrant up --provision win-msvc12
-	vagrant halt win-msvc12
+define build-targets
+  snapshot$1: Vagrantfile
+		FIRSTBOOT=1 vagrant up win-msvc$1
+		vagrant halt win-msvc$1
+		vagrant up --provision win-msvc$1
+		vagrant halt win-msvc$1
 
-msvc12: Dockerfile
-	docker build -f Dockerfile -t msvc:12 --build-arg MSVC=12 .
+  msvc$1: Dockerfile
+		docker build -f Dockerfile -t msvc:$1 --build-arg MSVC=$1 .
+endef
 
-
-snapshot14: Vagrantfile
-	FIRSTBOOT=1 vagrant up win-msvc14
-	vagrant halt win-msvc14
-	vagrant up --provision win-msvc14
-	vagrant halt win-msvc14
-
-msvc14: Dockerfile
-	docker build -f Dockerfile -t msvc:14 --build-arg MSVC=14 .
-
-
-snapshot15: Vagrantfile
-	FIRSTBOOT=1 vagrant up win-msvc15
-	vagrant halt win-msvc15
-	vagrant up --provision win-msvc15
-	vagrant halt win-msvc15
-
-msvc15: Dockerfile
-	docker build -f Dockerfile -t msvc:15 --build-arg MSVC=15 .
+$(foreach element,$(MSVC_VERS),$(eval $(call build-targets,$(element))))
 
 # Microsoft's "Microsoft/EdgeOnWindows10" vagrant cloud image is out of date, so we have to jump through hoops
 # see https://github.com/MicrosoftEdge/dev.microsoftedge.com-vms/issues/22
