@@ -1,6 +1,8 @@
 
 snapshot12: Vagrantfile
-	vagrant up win-msvc12
+	FIRSTBOOT=1 vagrant up win-msvc12
+	vagrant halt win-msvc12
+	vagrant up --provision win-msvc12
 	vagrant halt win-msvc12
 
 msvc12: Dockerfile
@@ -8,7 +10,9 @@ msvc12: Dockerfile
 
 
 snapshot14: Vagrantfile
-	vagrant up win-msvc14
+	FIRSTBOOT=1 vagrant up win-msvc14
+	vagrant halt win-msvc14
+	vagrant up --provision win-msvc14
 	vagrant halt win-msvc14
 
 msvc14: Dockerfile
@@ -16,7 +20,9 @@ msvc14: Dockerfile
 
 
 snapshot15: Vagrantfile
-	vagrant up win-msvc15
+	FIRSTBOOT=1 vagrant up win-msvc15
+	vagrant halt win-msvc15
+	vagrant up --provision win-msvc15
 	vagrant halt win-msvc15
 
 msvc15: Dockerfile
