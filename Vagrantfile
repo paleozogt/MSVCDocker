@@ -20,13 +20,12 @@ Vagrant.configure("2") do |config|
         vmname = "win-msvc%s" % [ msvc ]
 
         config.vm.define vmname do |vmconfig|
-            vmconfig.vm.box = "jhakonen/windows-10-n-pro-en-x86_64"
-            vmconfig.vm.box = "jhakonen/windows-10-n-pro-en-x86_64"
+            vmconfig.vm.box = "Microsoft/EdgeOnWindows10"
             vmconfig.vm.guest = :windows
             vmconfig.vm.synced_folder "build", "/vagrant"
 
-            vmconfig.winrm.username = vmconfig.ssh.username = "vagrant"
-            vmconfig.winrm.password = vmconfig.ssh.password = "vagrant"
+            vmconfig.winrm.username = vmconfig.ssh.username = "IEUser"
+            vmconfig.winrm.password = vmconfig.ssh.password = "Passw0rd!"
             vmconfig.ssh.insert_key = false
 
             vmconfig.vm.provider :virtualbox do |v, override|
@@ -53,6 +52,7 @@ Vagrant.configure("2") do |config|
                 # make the network private so that WinRM isn't blocked by the firewall
                 # (fortunately the basebox has SSH running)
                 vmconfig.vm.provision "ssh", inline: 'powershell "Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private"'
+                vmconfig.vm.provision "ssh", inline: 'powershell "winrm quickconfig -quiet -force"'
                 vmconfig.vm.provision "ssh", inline: 'shutdown -t 0 -s -f'
             else
                 vmconfig.vm.communicator = "winrm"
