@@ -43,11 +43,39 @@ RUN apt-get update && apt-get install -y \
 ENV WINEARCH win64
 ENV WINEPREFIX=/opt/win
 RUN winetricks win10
-RUN wget https://dl.winehq.org/wine/wine-mono/4.7.3/wine-mono-4.7.3.msi && \
-    wine msiexec /i wine-mono-4.7.3.msi && \
-    rm *.msi
 RUN wineboot -r
 RUN wine cmd.exe /c echo '%ProgramFiles%'
+
+# vc redist 2010
+RUN wget https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe && \
+    xvfb-run wine vcredist_x86.exe /Q /norestart && \
+    rm *.exe
+RUN wget https://download.microsoft.com/download/3/2/2/3224B87F-CFA0-4E70-BDA3-3DE650EFEBA5/vcredist_x64.exe && \
+    xvfb-run wine vcredist_x64.exe /Q /norestart && \
+    rm *.exe
+
+# vc redist 2013
+RUN wget https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe && \
+    xvfb-run wine vcredist_x86.exe /Q /norestart && \
+    rm *.exe
+RUN wget https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe && \
+    xvfb-run wine vcredist_x64.exe /Q /norestart && \
+    rm *.exe
+RUN wineboot -r
+
+# install dotnet
+# winetricks' dotnet installers don't work well on 64-bit, 
+# so we employ a well-known workaround: https://www.reddit.com/r/wine_gaming/comments/8r6low/guide_how_to_install_net_45_on_64bit_prefixes/
+RUN winetricks winxp
+RUN wget 'https://download.microsoft.com/download/9/5/A/95A9616B-7A37-4AF6-BC36-D6EA96C8DAAE/dotNetFx40_Full_x86_x64.exe' && \
+    wine64 dotNetFx40_Full_x86_x64.exe /q && wineserver -k && \
+    rm *.exe
+RUN winetricks win7
+ENV WINEDLLOVERRIDES=mscoree=n
+RUN wget 'https://download.microsoft.com/download/9/E/6/9E63300C-0941-4B45-A0EC-0008F96DD480/NDP471-KB4033342-x86-x64-AllOS-ENU.exe' && \
+    wine64 NDP471-KB4033342-x86-x64-AllOS-ENU.exe /q && wineserver -k && \
+    rm *.exe
+RUN winetricks win10
 
 # bring over the snapshots
 ARG MSVC
@@ -143,7 +171,6 @@ RUN vcwine which --version
 RUN rm -rf $HOME/snapshots
 
 # reboot for luck
-RUN winetricks win10
 RUN wineboot -r
 
 # get _MSC_VER for use with clang-cl

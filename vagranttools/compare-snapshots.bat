@@ -8,7 +8,13 @@ set OUTPUT=%3
 
 mkdir %OUTPUT%
 
+@rem diff the file lists
 diff --unchanged-group-format=  %SNAPSHOT1%\files-sorted.txt %SNAPSHOT2%\files-sorted.txt > %OUTPUT%\files.txt
+
+@rem manually include some files
+cd %SystemRoot%
+fd -a -t f -i MSVCR.*_CLR.*.dll >> %OUTPUT%\files.txt
+
 zip %OUTPUT%\files.zip -@ < %OUTPUT%\files.txt
 
 regdiff %SNAPSHOT1%\HKLM.reg %SNAPSHOT2%\HKLM.reg /DIFF %OUTPUT%\HKLM.reg
