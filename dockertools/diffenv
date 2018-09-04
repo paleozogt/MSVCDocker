@@ -40,6 +40,6 @@ sed -i.bak 's/C:\\Windows\\system32;//g' "$ENVTO"
 sed -i.bak 's/C:\\Windows\\System32\\Wbem;//g' "$ENVTO"
 sed -i.bak 's/C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;//g' "$ENVTO"
 
-rm $ENV1
-rm $ENV2
+rm $ENV1 $ENV1.bak
+rm $ENV2 $ENV2.bak
 rm "$ENVTO.bak"
