@@ -22,7 +22,7 @@ make snapshot15
 make msvc15
 ```
 
-MSVC 12, 14, and 15 are supported.
+MSVC 11, 12, 14, and 15 are supported.
 
 Note: The snapshot step can take quite some time, as the MSVC installers are notoriously gigantic and slow.
 
