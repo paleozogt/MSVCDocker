@@ -1,4 +1,6 @@
 FROM ubuntu:xenial
+USER root
+WORKDIR /root
 
 RUN apt-get update
 RUN apt-get install -y wget apt-transport-https software-properties-common
@@ -24,13 +26,9 @@ RUN apt-get install -y zip p7zip-full cabextract winbind dos2unix
 # virtual display (because its windows of course)
 RUN apt-get install -y xvfb
 
-# wine gets upset if you run it as root
-RUN adduser --gecos "" --disabled-password --uid 1000 wine
-WORKDIR /home/wine
-USER wine
-
 # setup wine
 ENV WINEARCH win64
+ENV WINEPREFIX=/opt/windows
 RUN winetricks win10
 RUN wget https://dl.winehq.org/wine/wine-mono/4.7.3/wine-mono-4.7.3.msi && \
     wine msiexec /i wine-mono-4.7.3.msi && \
@@ -41,38 +39,32 @@ RUN wine cmd.exe /c echo '%ProgramFiles%'
 # bring over the snapshots
 ARG MSVC
 ADD build/msvc$MSVC/snapshots snapshots
-USER root
-RUN chown -R wine:wine snapshots
-USER wine
 
 # import the snapshot files
-RUN cd .wine/drive_c && \
+RUN cd $WINEPREFIX/drive_c && \
     unzip $HOME/snapshots/CMP/files.zip
 
 # import registry snapshot
 RUN wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
 
-# vcwine
-USER root
-ADD dockertools/vcwine /usr/local/bin/vcwine
+# import environment snapshot
 ADD dockertools/diffenv /usr/local/bin/diffenv
-RUN diffenv /home/wine/snapshots/SNAPSHOT-01/env.txt /home/wine/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcvars
-USER wine
+RUN diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcvars
 
 # 64-bit linking has trouble finding cvtres, so help it out
-RUN find .wine -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
+RUN find $WINEPREFIX -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
 
 # workaround bugs in wine's cmd that prevents msvc setup bat files from working
 ADD dockertools/hackvcvars hackvcvars
-USER root
-RUN chown wine:wine hackvcvars
-USER wine
-RUN find .wine/drive_c -iname v[cs]\*.bat | xargs -Ifile $HOME/hackvcvars "file" && \
-    find .wine/drive_c -iname win\*.bat | xargs -Ifile $HOME/hackvcvars "file" && \
+RUN find $WINEPREFIX/drive_c -iname v[cs]\*.bat | xargs -Ifile $HOME/hackvcvars "file" && \
+    find $WINEPREFIX/drive_c -iname win\*.bat | xargs -Ifile $HOME/hackvcvars "file" && \
     rm hackvcvars
 
+# vcwine
+ADD dockertools/vcwine /usr/local/bin/vcwine
+
 # make a tools dir
-RUN mkdir -p .wine/drive_c/tools/bin
+RUN mkdir -p $WINEPREFIX/drive_c/tools/bin
 ENV WINEPATH C:\\tools\\bin
 
 # install cmake
@@ -80,24 +72,22 @@ ARG CMAKE_SERIES_VER=3.12
 ARG CMAKE_VERS=$CMAKE_SERIES_VER.1
 RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-win64-x64.zip -O cmake.zip && \
     unzip $HOME/cmake.zip && \
-    mv cmake-*/* .wine/drive_c/tools && \
+    mv cmake-*/* $WINEPREFIX/drive_c/tools && \
     rm -rf cmake*
+RUN vcwine cmake --version
 
 # install jom
 RUN wget http://download.qt.io/official_releases/jom/jom.zip -O jom.zip && \
     unzip -d jom $HOME/jom.zip && \
-    mv jom/jom.exe .wine/drive_c/tools/bin && \
+    mv jom/jom.exe $WINEPREFIX/drive_c/tools/bin && \
     rm -rf jom*
+RUN vcwine jom /VERSION
 
 # install which (for easy path debugging)
 RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
-    cd ".wine/drive_c/tools" && \
+    cd "$WINEPREFIX/drive_c/tools" && \
     unzip $HOME/which.zip && \
     rm $HOME/which.zip
-
-# test the tools
-RUN vcwine cmake --version
-RUN vcwine jom /VERSION
 RUN vcwine which --version
 
 # clean up
@@ -109,14 +99,12 @@ RUN wineboot -r
 
 # make sure we can compile
 ADD test test
-USER root
-RUN chown -R wine:wine test
-USER wine
 RUN cd test && \
     vcwine cl helloworld.cpp && \
     vcwine helloworld.exe && \
     cd .. && rm -rf test
 
+# turn off wine's verbose logging
 ENV WINEDEBUG=-all
 
 ENTRYPOINT [ "/usr/local/bin/vcwine" ]
