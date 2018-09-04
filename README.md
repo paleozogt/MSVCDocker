@@ -106,6 +106,7 @@ hello world from win x86_64 msvc v1915
 
  * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
  * [Vagrant](https://www.vagrantup.com/downloads.html)
+    * [Vagrant Reload Plugin](https://github.com/aidanns/vagrant-reload)
  * [Docker](https://www.docker.com/get-started)
 
 ### References
