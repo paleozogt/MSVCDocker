@@ -28,6 +28,8 @@ Vagrant.configure("2") do |config|
             vmconfig.winrm.password = vmconfig.ssh.password = "Passw0rd!"
             vmconfig.ssh.insert_key = false
 
+            vmconfig.vm.boot_timeout = ENV['TIMEOUT'].to_i if ENV['TIMEOUT']
+
             vmconfig.vm.provider :virtualbox do |v, override|
                 v.name = vmname
                 v.linked_clone = true
