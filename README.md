@@ -1,6 +1,6 @@
 # Microsoft Visual C via Wine in Docker
 
-CI with MSVC is unnecessarily difficult. Can't we just use Docker?
+CI with [MSVC](https://visualstudio.microsoft.com/vs/community/) is unnecessarily difficult. Can't we just use [Docker](https://www.docker.com/get-started)?
 
 It turns out we can-- by running MSVC in [Wine](https://www.winehq.org/).  Lots of folks have tried to do this over the years [[1](README.md#references)], but the setup is involved and fiddly.  But scripting complicated setups is what Docker was made for!
 
