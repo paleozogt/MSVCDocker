@@ -18,7 +18,7 @@ sort $ENV1 -o $ENV1
 sort $ENV2 -o $ENV2
 
 # diff the env vars
-diff --unchanged-group-format=  $ENV1 $ENV2 > "$ENVTO"
+diff --unchanged-group-format=  $ENV1 $ENV2 > "$ENVTO" || true
 
 # comment out any vars with parens (e.g., "ProgramFiles(x86)")
 sed -i.bak 's/\(.*(.*=\)/# \1/g' "$ENVTO"
@@ -40,6 +40,6 @@ sed -i.bak 's/C:\\Windows\\system32;//g' "$ENVTO"
 sed -i.bak 's/C:\\Windows\\System32\\Wbem;//g' "$ENVTO"
 sed -i.bak 's/C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;//g' "$ENVTO"
 
-rm $ENV1 $ENV1.bak
-rm $ENV2 $ENV2.bak
-rm "$ENVTO.bak"
+rm -f $ENV1 $ENV1.bak
+rm -f $ENV2 $ENV2.bak
+rm -f "$ENVTO.bak"
