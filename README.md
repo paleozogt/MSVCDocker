@@ -6,6 +6,13 @@ It turns out we can-- by running MSVC in [Wine](https://www.winehq.org/).  Lots 
 
 The big blocker to getting MSVC in Wine is that even though the software itself works under Wine, the installers *don't*.  We dodge that problem by using [Vagrant](https://www.vagrantup.com/downloads.html) to drive the MSVC installer in a real Windows OS within [VirtualBox](https://www.virtualbox.org/wiki/Downloads), export a snapshot of the installation, and then [Docker](https://www.docker.com/get-started) copies the snapshot into Wine.
 
+### Requirements
+
+ * [Docker](https://www.docker.com/get-started)
+ * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+ * [Vagrant](https://www.vagrantup.com/downloads.html)
+    * [Vagrant Reload Plugin](https://github.com/aidanns/vagrant-reload)
+
 ### Building an Image
 
 To create an `msvc:15` Docker image:
@@ -21,10 +28,15 @@ Note: The snapshot step can take quite some time, as the MSVC installers are not
 
 ### Usage
 
+Let's set up an alias to simplify our Docker command:
+```
+alias vcwine="docker run -v$HOME:$HOME -w$PWD -u 0:$UID --rm -t -i msvc:15"
+```
+
 The Docker images are setup to run everything through Wine.  So for example, you can do DOS things like `dir`:
 
 ```
-✗ docker run -v$PWD:$PWD -w$PWD --rm -t -i msvc:15 cmd /c dir
+✗ vcwine cmd /c dir
 Volume in drive Z has no label.
 Volume Serial Number is 0000-0000
 
@@ -46,7 +58,7 @@ Directory of Z:\Users\asimmons\Development\test\MSVCDocker
 
 Compiling a Hello World:
 ```
-✗ docker run -v$PWD:$PWD -w$PWD --rm -t -i msvc:15 cl test/helloworld.cpp 
+✗ vcwine cl test/helloworld.cpp 
 Microsoft (R) C/C++ Optimizing Compiler Version 19.15.26726 for x64
 Copyright (C) Microsoft Corporation.  All rights reserved.
 
@@ -61,15 +73,15 @@ helloworld.obj
 
 Running Hello World:
 ```
-✗ docker run -v$PWD:$PWD -w$PWD --rm -t -i msvc:15 helloworld.exe        
+✗ vcwine helloworld.exe
 hello world from win x86_64 msvc v1915
 ```
 
 [CMake](https://cmake.org/) and [JOM](https://wiki.qt.io/Jom) are also included, so you can build Hello World that way:
 ```
 ✗ mkdir -p build/test
-
-✗ docker run -v$PWD:$PWD -w$PWD/build/test --rm -t -i msvc:15 cmake ../../test -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM"
+✗ cd build/test
+✗ vcwine cmake ../../test -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM"
 -- The C compiler identification is MSVC 19.15.26726.0
 -- The CXX compiler identification is MSVC 19.15.26726.0
 -- Check for working C compiler: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.15.26726/bin/Hostx64/x64/cl.exe
@@ -88,7 +100,7 @@ hello world from win x86_64 msvc v1915
 -- Generating done
 -- Build files have been written to: Z:/Users/asimmons/Development/test/MSVCDocker/build/test
 
-✗ docker run -v$PWD:$PWD -w$PWD/build/test --rm -t -i msvc:15 jom
+✗ vcwine jom
 jom 1.1.2 - empower your cores
 jom: parallel job execution disabled for Makefile
 Scanning dependencies of target helloworld
@@ -97,17 +109,10 @@ helloworld.cpp
 [100%] Linking CXX executable helloworld.exe
 [100%] Built target helloworld
 
-✗ docker run -v$PWD:$PWD -w$PWD/build/test --rm -t -i msvc:15 helloworld.exe
+✗ vcwine helloworld.exe
 hello world from win x86_64 msvc v1915
 
 ```
-
-### Requirements
-
- * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
- * [Vagrant](https://www.vagrantup.com/downloads.html)
-    * [Vagrant Reload Plugin](https://github.com/aidanns/vagrant-reload)
- * [Docker](https://www.docker.com/get-started)
 
 ### References
  * https://hackernoon.com/a-c-hello-world-and-a-glass-of-wine-oh-my-263434c0b8ad
