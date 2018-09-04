@@ -114,6 +114,20 @@ hello world from win x86_64 msvc v1915
 
 ```
 
+### Known Issues
+
+* MSBuild doesn't work, so you can't do things like
+
+  ```
+  vcwine cmake ../../test -G "Visual Studio 15 2017 Win64"
+  vcwine msbuild
+  ```
+
+  MSBuild depends heavily on .Net, which Wine often has trouble with (especially with `WINEARCH=win64`).
+
+* While release builds work fine, debug builds don't quite work.
+
+
 ### References
  * https://hackernoon.com/a-c-hello-world-and-a-glass-of-wine-oh-my-263434c0b8ad
  * https://dekken.github.io/2015/12/29/MSVC2015-on-Debian-with-Wine-and-Maiken.html
