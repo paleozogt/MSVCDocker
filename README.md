@@ -94,7 +94,7 @@ helloworld.obj
 
 Running the 32-bit Hello World:
 ```
-vcwine helloworld.exe
+✗ vcwine helloworld.exe
 hello world from win x86 msvc v1915
 ```
 
