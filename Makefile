@@ -1,15 +1,21 @@
 MSVC_VERS = 15 14 12 11 10
 
 define build-targets
-  snapshot$1: Vagrantfile
+  vagrantsetup$1: Vagrantfile
 		FIRSTBOOT=1 vagrant up win-msvc$1
 		vagrant halt win-msvc$1
 		TIMEOUT=30 vagrant up win-msvc$1 || true
+
+  buildsnapshot$1: Vagrantfile
 		vagrant up --provision win-msvc$1
 		vagrant halt win-msvc$1
 
-  msvc$1: Dockerfile
+  snapshot$1: vagrantsetup$1 buildsnapshot$1
+
+  buildimage$1: Dockerfile
 		docker build -f Dockerfile -t msvc:$1 --build-arg MSVC=$1 .
+
+  msvc$1: snapshot$1 buildimage$1
 endef
 
 $(foreach element,$(MSVC_VERS),$(eval $(call build-targets,$(element))))
