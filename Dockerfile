@@ -42,7 +42,7 @@ ADD build/msvc$MSVC/snapshots snapshots
 
 # import the snapshot files
 RUN cd $WINEPREFIX/drive_c && \
-    unzip $HOME/snapshots/CMP/files.zip
+    unzip -n $HOME/snapshots/CMP/files.zip
 
 # import registry snapshot
 RUN wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
