@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+export MSVCARCH="${MSVCARCH:-64}"
+
 # bring in the msvc vars as environment variables so they'll be picked up by wine
 set -a
-source /etc/vcvars
+source /etc/vcvars$MSVCARCH
 set +a
 
 # append the imported windows Path (distinct from PATH) to the WINEPATH

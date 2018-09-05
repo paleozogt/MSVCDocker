@@ -49,7 +49,8 @@ RUN wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
 
 # import environment snapshot
 ADD dockertools/diffenv /usr/local/bin/diffenv
-RUN diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcvars
+RUN diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars32.txt /etc/vcvars32
+RUN diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcvars64
 
 # 64-bit linking has trouble finding cvtres, so help it out
 RUN find $WINEPREFIX -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
@@ -61,6 +62,7 @@ RUN find $WINEPREFIX/drive_c -iname v[cs]\*.bat | xargs -Ifile $HOME/hackvcvars 
     rm hackvcvars
 
 # vcwine
+ENV MSVCARCH=64
 ADD dockertools/vcwine /usr/local/bin/vcwine
 
 # make a tools dir

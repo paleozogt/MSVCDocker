@@ -28,9 +28,9 @@ Note: The snapshot step can take quite some time, as the MSVC installers are not
 
 ### Usage
 
-Let's set up an alias to simplify our Docker command:
+Let's simplify our Docker command:
 ```
-alias vcwine="docker run -v$HOME:$HOME -w$PWD -u 0:$UID --rm -t -i msvc:15"
+function vcwine() { docker run -v$HOME:$HOME -w$PWD -u 0:$UID -eMSVCARCH=$MSVCARCH --rm -t -i msvc:12 "$@"; }
 ```
 
 The Docker images are setup to run everything through Wine.  So for example, you can do DOS things like `dir`:
@@ -75,6 +75,27 @@ Running Hello World:
 ```
 ✗ vcwine helloworld.exe
 hello world from win x86_64 msvc v1915
+```
+
+Even though its 2018, maybe you want to build for 32-bit:
+```
+✗ MSVCARCH=32 vcwine cl test/helloworld.cpp
+Microsoft (R) C/C++ Optimizing Compiler Version 18.00.31101 for x86
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+helloworld.cpp
+C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\INCLUDE\xlocale(337) : warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
+Microsoft (R) Incremental Linker Version 12.00.31101.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+/out:helloworld.exe
+helloworld.obj
+```
+
+Running the 32-bit Hello World:
+```
+vcwine helloworld.exe
+hello world from win x86 msvc v1915
 ```
 
 [CMake](https://cmake.org/) and [JOM](https://wiki.qt.io/Jom) are also included, so you can build Hello World that way:
