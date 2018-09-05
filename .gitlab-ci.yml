@@ -1,0 +1,45 @@
+# GitLab CI build configuration
+# https://docs.gitlab.com/ce/ci/yaml/
+
+variables:
+    GIT_STRATEGY: clone
+
+before_script:
+  - vagrant destroy --force
+
+after_script:
+  - vagrant destroy --force
+
+.build_template: &build_template
+    script:
+        - export MSVC_VER=`echo $CI_JOB_NAME | cut -d'c' -f2`
+        - make $CI_JOB_NAME
+
+        - docker tag msvc:$MSVC_VER $CI_REGISTRY_IMAGE/msvc:$MSVC_VER
+        - docker images
+
+        - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+        - docker push $CI_REGISTRY_IMAGE/msvc:$MSVC_VER
+
+        - docker rmi msvc:$MSVC_VER
+        - docker rmi $CI_REGISTRY_IMAGE/msvc:$MSVC_VER
+    tags:
+        - docker
+        - virtualbox
+    only:
+        - master
+        - production
+        - tags
+        - web
+
+msvc15:
+    <<: *build_template
+
+msvc14:
+    <<: *build_template
+
+msvc12:
+    <<: *build_template
+
+msvc11:
+    <<: *build_template
