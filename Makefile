@@ -4,7 +4,6 @@ define build-targets
   vagrantsetup$1: Vagrantfile
 		FIRSTBOOT=1 vagrant up win-msvc$1
 		vagrant halt win-msvc$1
-		TIMEOUT=30 vagrant up win-msvc$1 || true
 
   buildsnapshot$1: Vagrantfile
 		vagrant up --provision win-msvc$1

@@ -49,12 +49,22 @@ Vagrant.configure("2") do |config|
             end
 
             if ENV['FIRSTBOOT']
+                # fortunately the basebox has SSH running
                 vmconfig.vm.communicator = "ssh"
 
-                # make the network private so that WinRM isn't blocked by the firewall
-                # (fortunately the basebox has SSH running)
+                # turn off firewall
                 vmconfig.vm.provision "ssh", inline: 'powershell "Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private"'
-                vmconfig.vm.provision "ssh", inline: 'powershell "winrm quickconfig -quiet -force"'
+                vmconfig.vm.provision "ssh", inline: 'powershell "NetSh Advfirewall set allprofiles state off" '
+
+                # turn off UAC
+                vmconfig.vm.provision "ssh", inline: 'cmd /c "reg add HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System /v EnableLUA /d 0 /t REG_DWORD /f /reg:64"'
+
+                # turn on winrm on startup
+                startup_folder = "/cygdrive/c/Users/#{vmconfig.ssh.username}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup"
+                winrm_config = 'cmd /k C:\\Windows\\System32\\winrm.cmd quickconfig --force -quiet'
+                vmconfig.vm.provision "ssh", inline: "echo '#{winrm_config}' > '#{startup_folder}/winrm_config.bat'"
+
+                # shutdown
                 vmconfig.vm.provision "ssh", inline: 'shutdown -t 0 -s -f'
             else
                 vmconfig.vm.communicator = "winrm"
