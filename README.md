@@ -30,7 +30,7 @@ Note: The snapshot step can take quite some time, as the MSVC installers are not
 
 Let's simplify our Docker command:
 ```
-function vcwine() { docker run -v$HOME:$HOME -w$PWD -u 0:$UID -eMSVCARCH=$MSVCARCH --rm -t -i msvc:12 "$@"; }
+function vcwine() { docker run -v$HOME:$HOME -w$PWD -u 0:$UID -eMSVCARCH=$MSVCARCH --rm -t -i msvc:15 "$@"; }
 ```
 
 The Docker images are setup to run everything through Wine.  So for example, you can do DOS things like `dir`:
