@@ -30,6 +30,8 @@ module CustomVagrantPlugins
                                      ssh_info[:username], 
                                      :password => ssh_info[:password], 
                                      :port => ssh_info[:port])
+
+                puts @config.inline
                 res = ssh.exec!(@config.inline)
             end
         end
