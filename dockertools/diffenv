@@ -33,6 +33,8 @@ sed -i.bak 's/=\(.*\)/=\x27\1\x27/g' "$ENVTO"
 # remove tools from the path used to make the vagrant snapshot
 sed -i.bak 's/C:\\Program Files (x86)\\GnuWin32\\bin;//g' "$ENVTO"
 sed -i.bak 's/C:\\ProgramData\\chocolatey\\bin;//g' "$ENVTO"
+sed -i.bak 's/C:\\Windows\\System32\\OpenSSH\\;//g' "$ENVTO"
+sed -i.bak 's/C:\\Program Files\\OpenSSH\\bin;//g' "$ENVTO"
 
 # remove unnecessary/redundant stuff from the path
 sed -i.bak 's/C:\\Windows;//g' "$ENVTO"
