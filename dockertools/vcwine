@@ -11,6 +11,9 @@ set +a
 export WINEPATH="$WINEPATH;$Path"
 export -n Path
 
+# wine seems to have a max on how long WINEPATH can be
+export WINEPATH=${WINEPATH:0:1024}
+
 # something is wonky with the way LINK.EXE reads the %LIB% env var;
 # this harmless munging of %LIB% seems to make it happy
 if [[ $VCINSTALLDIR = *"2017"* ]]; then
