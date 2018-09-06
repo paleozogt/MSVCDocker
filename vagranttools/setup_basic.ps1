@@ -14,7 +14,7 @@ powercfg -change -standby-timeout-ac 0
 powercfg -change -standby-timeout-dc 0
 
 # no windows updates
-stop-service wuauserv
+Stop-Service -Force -NoWait -Name wuauserv
 set-service wuauserv -startup disabled
 get-wmiobject win32_service -filter "name='wuauserv'"
 
