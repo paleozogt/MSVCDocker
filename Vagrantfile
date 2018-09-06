@@ -21,6 +21,7 @@ Vagrant.configure("2") do |config|
 
         config.vm.define vmname do |vmconfig|
             vmconfig.vm.box = "Microsoft/EdgeOnWindows10"
+            vmconfig.vm.box_version = "0"
             vmconfig.vm.guest = :windows
             vmconfig.vm.synced_folder "build", "/vagrant"
 

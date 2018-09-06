@@ -1,7 +1,7 @@
 MSVC_VERS = 15 14 12 11 10
 
 define build-targets
-  vagrantsetup$1: Vagrantfile
+  vagrantsetup$1: Vagrantfile setupbasebox
 		FIRSTBOOT=1 vagrant up win-msvc$1
 		vagrant halt win-msvc$1
 
@@ -19,14 +19,5 @@ endef
 
 $(foreach element,$(MSVC_VERS),$(eval $(call build-targets,$(element))))
 
-# Microsoft's "Microsoft/EdgeOnWindows10" vagrant cloud image is out of date, so we have to jump through hoops
-# see https://github.com/MicrosoftEdge/dev.microsoftedge.com-vms/issues/22
-downloadbasebox:
-	wget https://az792536.vo.msecnd.net/vms/VMBuild_20180425/Vagrant/MSEdge/MSEdge.Win10.Vagrant.zip -O build/MSEdge.Win10.Vagrant.zip
-	unzip -d build build/MSEdge.Win10.Vagrant.zip
-
-importbasebox:
-	vagrant box add --force "build/MSEdge - Win10.box" --name "Microsoft/EdgeOnWindows10"
-	vagrant box list
-
-setupbasebox: downloadbasebox importbasebox
+setupbasebox: ./vagranttools/setupbasebox.sh
+	./vagranttools/setupbasebox.sh
