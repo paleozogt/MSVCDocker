@@ -46,20 +46,22 @@ RUN winetricks win10
 RUN wineboot -r
 RUN wine cmd.exe /c echo '%ProgramFiles%'
 
+ADD dockertools/xvfbwine /usr/local/bin/xvfbwine
+
 # vc redist 2010
 RUN wget https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe && \
-    xvfb-run wine vcredist_x86.exe /Q /norestart && \
+    xvfbwine vcredist_x86.exe /Q /norestart && \
     rm *.exe
 RUN wget https://download.microsoft.com/download/3/2/2/3224B87F-CFA0-4E70-BDA3-3DE650EFEBA5/vcredist_x64.exe && \
-    xvfb-run wine vcredist_x64.exe /Q /norestart && \
+    xvfbwine vcredist_x64.exe /Q /norestart && \
     rm *.exe
 
 # vc redist 2013
 RUN wget https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe && \
-    xvfb-run wine vcredist_x86.exe /Q /norestart && \
+    xvfbwine vcredist_x86.exe /Q /norestart && \
     rm *.exe
 RUN wget https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe && \
-    xvfb-run wine vcredist_x64.exe /Q /norestart && \
+    xvfbwine vcredist_x64.exe /Q /norestart && \
     rm *.exe
 RUN wineboot -r
 

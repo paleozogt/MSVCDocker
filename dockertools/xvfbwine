@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+export DISPLAY=:99
+
+Xvfb $DISPLAY &
+wine "$@"
+pkill Xvfb
