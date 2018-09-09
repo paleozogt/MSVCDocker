@@ -38,10 +38,6 @@ RUN apt-get update && apt-get install -y \
 ENV WINEARCH win64
 ENV WINEPREFIX=/opt/win
 RUN winetricks win10
-RUN wget https://dl.winehq.org/wine/wine-mono/4.7.3/wine-mono-4.7.3.msi && \
-    wine msiexec /i wine-mono-4.7.3.msi && \
-    rm *.msi
-RUN wineboot -r
 RUN wine cmd.exe /c echo '%ProgramFiles%'
 
 # dotnet in wine

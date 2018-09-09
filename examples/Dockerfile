@@ -1,6 +1,10 @@
 ARG MSVC
 FROM msvc:$MSVC
 
+# dotnet in wine
+RUN WINEDEBUG= winetricks -q dotnet472
+RUN winetricks win10
+
 RUN apt-get update && apt-get install -y \
     curl \
  && rm -rf /var/lib/apt/lists/*
