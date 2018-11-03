@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -e
+set -u
+
+source "$1"
+ENVTO="$2"
+
+# clang-cl include path
+echo "C_INCLUDE_PATH=$INCLUDE" >> "$ENVTO"
+echo "CPLUS_INCLUDE_PATH=$INCLUDE" >> "$ENVTO"
+
+# how clang-cl knows its in an MSVC shell
+echo "PATH=$PATH:$Path" >> "$ENVTO"
+
+# unix-style PATH separator
+sed -i.bak 's-;-:-g' "$ENVTO"
+
+# lld-link's version of LIBRARY_PATH
+# (note that we don't change the path separator, as it uses windows-style)
+echo "LIB=$LIB" >> "$ENVTO"
+
+# unix paths
+sed -i.bak 's-C:\\-\$WINEPREFIX/drive_c/-g' "$ENVTO"
+
+# unix-style slashes
+sed -i.bak 's-\\-/-g' "$ENVTO"
+
+# escape spaces
+sed -i.bak 's- -\\ -g' "$ENVTO"
+
+# escape parentheses
+sed -i.bak 's-(-\\\(-g' "$ENVTO"
+sed -i.bak 's-)-\\\)-g' "$ENVTO"
+
+# escape semicolons
+sed -i.bak 's-;-\\;-g' "$ENVTO"
+
+rm -f "$ENVTO".bak

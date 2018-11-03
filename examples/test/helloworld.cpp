@@ -27,6 +27,9 @@ int main() {
     #if defined(__GNUC__)
         compiler= "gnu";
         compilerVer= __GNUC__;
+    #elif defined(__clang__)
+        compiler= "clang";
+        compilerVer= __clang_major__;
     #elif defined(_MSC_VER)
         compiler= "msvc";
         compilerVer= _MSC_VER;

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+export MSVCARCH="${MSVCARCH:-64}"
+export MSC_VER="${MSC_VER:-0}"
+
+# bring in the msvc vars as environment variables so they'll be picked up by clang
+set -a
+source /etc/vcclang/vcvars$MSVCARCH
+set +a
+
+# pass along script args to clang
+$CLANG_HOME/clang-cl -m$MSVCARCH -fmsc-version=$MSC_VER -fuse-ld=lld-link "$@"

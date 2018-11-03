@@ -42,6 +42,11 @@ sed -i.bak 's/C:\\Windows\\system32;//g' "$ENVTO"
 sed -i.bak 's/C:\\Windows\\System32\\Wbem;//g' "$ENVTO"
 sed -i.bak 's/C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;//g' "$ENVTO"
 
+# fix inconsistent casing
+sed -i.bak 's-HostX64-Hostx64-g' "$ENVTO"
+sed -i.bak 's-\\INCLUDE-\\include-g' "$ENVTO"
+sed -i.bak 's-\\LIB-\\lib-g' "$ENVTO"
+
 rm -f $ENV1 $ENV1.bak
 rm -f $ENV2 $ENV2.bak
 rm -f "$ENVTO.bak"

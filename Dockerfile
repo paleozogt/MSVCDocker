@@ -2,6 +2,7 @@ FROM ubuntu:xenial
 USER root
 WORKDIR /root
 
+# install basics
 RUN apt-get update && apt-get install -y \
     apt-transport-https \
     software-properties-common \
@@ -60,9 +61,14 @@ RUN cd $WINEPREFIX/drive_c && \
 RUN wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
 
 # import environment snapshot
-ADD dockertools/diffenv /usr/local/bin/diffenv
-RUN diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars32.txt /etc/vcvars32
-RUN diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcvars64
+ADD dockertools/diffenv diffenv
+ADD dockertools/make-vcclang-vars make-vcclang-vars
+RUN mkdir /etc/vcwine /etc/vcclang
+RUN ./diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars32.txt /etc/vcwine/vcvars32 && \
+    ./make-vcclang-vars /etc/vcwine/vcvars32 /etc/vcclang/vcvars32
+RUN ./diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcwine/vcvars64 && \
+    ./make-vcclang-vars /etc/vcwine/vcvars64 /etc/vcclang/vcvars64
+RUN rm diffenv make-vcclang-vars
 
 # 64-bit linking has trouble finding cvtres, so help it out
 RUN find $WINEPREFIX -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
@@ -73,31 +79,60 @@ RUN find $WINEPREFIX/drive_c -iname v[cs]\*.bat | xargs -Ifile $HOME/hackvcvars 
     find $WINEPREFIX/drive_c -iname win\*.bat | xargs -Ifile $HOME/hackvcvars "file" && \
     rm hackvcvars
 
+# fix inconsistent casing in filenames
+RUN find $WINEPREFIX -name Include -execdir mv Include include \; || \
+    find $WINEPREFIX -name Lib -execdir mv Lib lib \; || \
+    find $WINEPREFIX -name \*.Lib -execdir rename 'y/A-Z/a-z/' {} \;
+
 # vcwine
 ENV MSVCARCH=64
 ADD dockertools/vcwine /usr/local/bin/vcwine
+ADD dockertools/clang-cl /usr/local/bin/clang-cl
+ADD dockertools/lld-link /usr/local/bin/lld-link
 
 # make a tools dir
 RUN mkdir -p $WINEPREFIX/drive_c/tools/bin
 ENV WINEPATH C:\\tools\\bin
 
-# install cmake
+# install clang on host (for clang-cl)
+ENV CLANG_HOME=/opt/bin
+ENV CC=clang-cl
+ENV CXX=clang-cl
+RUN wget https://releases.llvm.org/7.0.0/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
+    tar xvf *.tar.xz && \
+    cp -r clang*/* /opt && \
+    rm -rf clang*
+RUN clang-cl --version
+RUN lld-link --version
+
+# install make on host
+RUN apt-get update && apt-get install -y \
+    make \
+ && rm -rf /var/lib/apt/lists/*
+
+# install cmake on host
 ARG CMAKE_SERIES_VER=3.12
 ARG CMAKE_VERS=$CMAKE_SERIES_VER.1
+RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-Linux-x86_64.sh -O cmake.sh && \
+    sh $HOME/cmake.sh --prefix=/usr/local --skip-license && \
+    rm -rf $HOME/cmake*
+RUN cmake --version
+
+# install cmake in wine
 RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-win64-x64.zip -O cmake.zip && \
     unzip $HOME/cmake.zip && \
     mv cmake-*/* $WINEPREFIX/drive_c/tools && \
     rm -rf cmake*
 RUN vcwine cmake --version
 
-# install jom
+# install jom in wine
 RUN wget http://download.qt.io/official_releases/jom/jom.zip -O jom.zip && \
     unzip -d jom $HOME/jom.zip && \
     mv jom/jom.exe $WINEPREFIX/drive_c/tools/bin && \
     rm -rf jom*
 RUN vcwine jom /VERSION
 
-# install which (for easy path debugging)
+# install which in wine (for easy path debugging)
 RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
     cd "$WINEPREFIX/drive_c/tools" && \
     unzip $HOME/which.zip && \
@@ -111,14 +146,29 @@ RUN rm -rf $HOME/snapshots
 RUN winetricks win10
 RUN wineboot -r
 
-# make sure we can compile
+# get _MSC_VER for use with clang-cl
+ADD dockertools/msc_ver.cpp msc_ver.cpp
+RUN vcwine cl msc_ver.cpp && \
+    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars32  && \
+    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars64  && \
+    rm *.cpp
+
+# make sure we can compile with MSVC
 ADD test test
 RUN cd test && \
     vcwine cl helloworld.cpp && \
     vcwine helloworld.exe && \
     cd .. && rm -rf test
 
+# make sure we can compile with clang-cl
+ADD test test
+RUN cd test && \
+    clang-cl helloworld.cpp && \
+    vcwine helloworld.exe && \
+    cd .. && rm -rf test
+
 # turn off wine's verbose logging
 ENV WINEDEBUG=-all
 
-ENTRYPOINT [ "/usr/local/bin/vcwine" ]
+ADD dockertools/vcentrypoint /usr/local/bin/vcentrypoint
+ENTRYPOINT [ "/usr/local/bin/vcentrypoint" ]

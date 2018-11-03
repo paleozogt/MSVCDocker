@@ -6,14 +6,14 @@ It turns out we can-- by running MSVC in [Wine](https://www.winehq.org/).  Lots 
 
 The big blocker to getting MSVC in Wine is that even though the software itself works under Wine, the installers *don't*.  We dodge that problem by using [Vagrant](https://www.vagrantup.com/downloads.html) to drive the MSVC installer in a real Windows OS within [VirtualBox](https://www.virtualbox.org/wiki/Downloads), export a snapshot of the installation, and then [Docker](https://www.docker.com/get-started) copies the snapshot into Wine.
 
-### Requirements
+## Requirements
 
  * [Docker](https://www.docker.com/get-started)
  * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
  * [Vagrant](https://www.vagrantup.com/downloads.html)
     * [Vagrant Reload Plugin](https://github.com/aidanns/vagrant-reload)
 
-### Building an Image
+## Building an Image
 
 To create an `msvc:15` Docker image:
 
@@ -25,21 +25,21 @@ MSVC 11, 12, 14, and 15 are supported.
 
 Note: The snapshot step can take quite some time, as the MSVC installers are notoriously gigantic and slow.
 
-### Usage
+## Usage
 
 Let's simplify our Docker command:
 ```
-function vcwine() { docker run -v$HOME:$HOME -w$PWD -u 0:$UID -eMSVCARCH=$MSVCARCH --rm -t -i msvc:15 "$@"; }
+function vcwine() { docker run -v$HOME:/host/$HOME -w/host/$PWD -u 0:$UID -eMSVCARCH=$MSVCARCH --rm -t -i msvc:15 "$@"; }
 ```
 
-The Docker images are setup to run everything through Wine.  So for example, you can do DOS things like `dir`:
+The Docker images are setup to run (nearly) everything through Wine.  So for example, we can do DOS things like `dir`:
 
 ```
 ✗ vcwine cmd /c dir
 Volume in drive Z has no label.
 Volume Serial Number is 0000-0000
 
-Directory of Z:\Users\asimmons\Development\test\MSVCDocker
+Directory of Z:\host\Users\paleozogt\Development\test\MSVCDocker
 
  8/31/2018   9:08 PM  <DIR>         .
  8/31/2018   9:21 PM  <DIR>         ..
@@ -55,6 +55,8 @@ Directory of Z:\Users\asimmons\Development\test\MSVCDocker
        6 directories     97,359,118,336 bytes free
 ```
 
+### MSVC's cl
+
 Compiling a Hello World:
 ```
 ✗ vcwine cl test/helloworld.cpp 
@@ -68,15 +70,13 @@ Copyright (C) Microsoft Corporation.  All rights reserved.
 
 /out:helloworld.exe 
 helloworld.obj 
-```
 
-Running Hello World:
-```
+
 ✗ vcwine helloworld.exe
 hello world from win x86_64 msvc v1915
 ```
 
-Even though its 2018, maybe you want to build for 32-bit:
+Even though its 2018, maybe we want to build for 32-bit:
 ```
 ✗ MSVCARCH=32 vcwine cl test/helloworld.cpp
 Microsoft (R) C/C++ Optimizing Compiler Version 18.00.31101 for x86
@@ -89,18 +89,19 @@ Copyright (C) Microsoft Corporation.  All rights reserved.
 
 /out:helloworld.exe
 helloworld.obj
-```
 
-Running the 32-bit Hello World:
-```
+
 ✗ vcwine helloworld.exe
 hello world from win x86 msvc v1915
 ```
 
-[CMake](https://cmake.org/) and [JOM](https://wiki.qt.io/Jom) are also included, so you can build Hello World that way:
+### CMake with cl
+
+Windows versions of [CMake](https://cmake.org/) and [JOM](https://wiki.qt.io/Jom) are also included, so we can build Hello World that way:
 ```
 ✗ mkdir -p build/test
 ✗ cd build/test
+
 ✗ vcwine cmake ../../test -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM"
 -- The C compiler identification is MSVC 19.15.26726.0
 -- The CXX compiler identification is MSVC 19.15.26726.0
@@ -118,7 +119,8 @@ hello world from win x86 msvc v1915
 -- Detecting CXX compile features - done
 -- Configuring done
 -- Generating done
--- Build files have been written to: Z:/Users/asimmons/Development/test/MSVCDocker/build/test
+-- Build files have been written to: Z:/Users/paleozogt/Development/test/MSVCDocker/build/test
+
 
 ✗ vcwine jom
 jom 1.1.2 - empower your cores
@@ -129,14 +131,81 @@ helloworld.cpp
 [100%] Linking CXX executable helloworld.exe
 [100%] Built target helloworld
 
+
 ✗ vcwine helloworld.exe
 hello world from win x86_64 msvc v1915
 
 ```
 
-### Known Issues
+### LLVM's clang-cl
 
-* MSBuild doesn't work, so you can't do things like
+[Clang](https://clang.llvm.org/) can cross-compile MSVC-compatible binaries with [clang-cl](http://blog.llvm.org/2018/03/clang-is-now-used-to-build-chrome-for.html).
+A linux version is included (ie, it doesn't use Wine), but it still needs the MSVC installation for headers/libs, and Wine is still useful for running
+the resulting binary.
+
+Compiling a Hello World:
+```
+✗ vcwine clang-cl test/helloworld.cpp 
+
+
+✗ vcwine helloworld.exe
+hello world from win x86_64 clang v7
+```
+
+Even though its 2018, maybe we want to build for 32-bit:
+```
+✗ MSVCARCH=32 vcwine clang-cl test/helloworld.cpp
+
+
+✗ vcwine helloworld.exe
+hello world from win x86 clang v7
+```
+
+### CMake with clang-cl
+
+Linux versions of [CMake](https://cmake.org/) and [Make](https://www.gnu.org/software/make/manual/html_node/Overview.html#Overview) are also included, so we can build Hello World that way.
+
+(Note that we have to be careful not to use the Windows/Wine CMake.)
+
+```
+✗ mkdir -p build/test
+✗ cd build/test
+
+✗ vcwine bash -c "cmake ../../test -DCMAKE_BUILD_TYPE=RELEASE"
+-- The C compiler identification is Clang 7.0.0
+-- The CXX compiler identification is Clang 7.0.0
+-- Check for working C compiler: /usr/local/bin/clang-cl
+-- Check for working C compiler: /usr/local/bin/clang-cl -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - failed
+-- Detecting C compile features
+-- Detecting C compile features - failed
+-- Check for working CXX compiler: /usr/local/bin/clang-cl
+-- Check for working CXX compiler: /usr/local/bin/clang-cl -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - failed
+-- Detecting CXX compile features
+-- Detecting CXX compile features - failed
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /host/Users/paleozogt/Development/test/MSVCDocker/build/test
+
+
+✗ vcwine bash -c make
+Scanning dependencies of target helloworld
+[ 50%] Building CXX object CMakeFiles/helloworld.dir/helloworld.cpp.o
+[100%] Linking CXX executable helloworld
+[100%] Built target helloworld
+
+
+✗ vcwine helloworld.exe
+hello world from win x86_64 clang v7
+```
+
+
+## Known Issues
+
+* MSBuild doesn't work, so we can't do things like
 
   ```
   vcwine cmake ../../test -G "Visual Studio 15 2017 Win64"
@@ -145,10 +214,19 @@ hello world from win x86_64 msvc v1915
 
   MSBuild depends heavily on .Net, which Wine often has trouble with (especially with `WINEARCH=win64`).
 
-* While release builds work fine, debug builds don't quite work.
+* When using MSVC's cl, release builds work fine but debug builds don't quite work.
 
+* When using LLVM's clang-cl, paths that begin with `/U` (such as `/Users/`) will cause [strange errors](https://reviews.llvm.org/D29198):
 
-### References
+  ```
+  clang-7: warning: '/Users/paleozogt/Development/test/MSVCDocker/build/test/CMakeFiles/CMakeTmp/testCCompiler.c' treated as the '/U' option [-Wslash-u-filename]
+  clang-7: note: Use '--' to treat subsequent arguments as filenames
+  clang-7: error: no input files
+  ```
+
+  It appears that `/Users/...` is getting mistaken for a cl flag `/U`.
+
+## References
  * https://hackernoon.com/a-c-hello-world-and-a-glass-of-wine-oh-my-263434c0b8ad
  * https://dekken.github.io/2015/12/29/MSVC2015-on-Debian-with-Wine-and-Maiken.html
  * http://kegel.com/wine/cl-howto.html
