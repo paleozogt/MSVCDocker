@@ -2,29 +2,41 @@ FROM ubuntu:xenial
 USER root
 WORKDIR /root
 
-RUN apt-get update
-RUN apt-get install -y wget apt-transport-https software-properties-common
+RUN apt-get update && apt-get install -y \
+    apt-transport-https \
+    software-properties-common \
+    wget \
+ && rm -rf /var/lib/apt/lists/*
 
 # setup wine repo
 RUN dpkg --add-architecture i386 && \
     wget -nc https://dl.winehq.org/wine-builds/Release.key && \
     apt-key add Release.key && \
     apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/ && \
-    rm *.key && \
-    apt-get update   
+    rm *.key
 
 # install wine
-RUN apt-get install -y --install-recommends winehq-stable
+RUN apt-get update && apt-get install -y --install-recommends \
+    winehq-stable \
+ && rm -rf /var/lib/apt/lists/*
 
 # install winetricks
 RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks && \
     chmod +x /usr/local/bin/winetricks
 
 # tools used by wine
-RUN apt-get install -y zip p7zip-full cabextract winbind dos2unix
+RUN apt-get update && apt-get install -y \
+    cabextract \
+    dos2unix \
+    p7zip-full \
+    winbind \
+    zip \
+ && rm -rf /var/lib/apt/lists/*
 
 # virtual display (because its windows of course)
-RUN apt-get install -y xvfb
+RUN apt-get update && apt-get install -y \
+    xvfb \
+ && rm -rf /var/lib/apt/lists/*
 
 # setup wine
 ENV WINEARCH win64
