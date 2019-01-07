@@ -12,7 +12,7 @@ make windev15
 
 Now setup a shortcut to use our image:
 ```
-function vcwine() { docker run -v$HOME:$HOME -w$PWD -u 0:$UID -eMSVCARCH=$MSVCARCH --rm -t -i windev:15 "$@"; }
+function vcwine() { docker run -v$HOME:/host/$HOME -w/host/$PWD -u 0:$UID -eMSVCARCH=$MSVCARCH --rm -t -i windev:15 "$@"; }
 ```
 
 Then we can build the example Java JNI / Python Extensions project:
