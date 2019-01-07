@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
 
 # setup wine repo
 RUN dpkg --add-architecture i386 && \
-    wget -nc https://dl.winehq.org/wine-builds/Release.key && \
-    apt-key add Release.key && \
+    wget -nc https://dl.winehq.org/wine-builds/winehq.key && \
+    apt-key add winehq.key && \
     apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/ && \
     rm *.key
 
