@@ -9,7 +9,7 @@
 jdk_version=${1:-8}
 ext=${2:-exe}
 
-readonly url="http://www.oracle.com"
+readonly url="https://www.oracle.com"
 readonly jdk_download_url1="$url/technetwork/java/javase/downloads/index.html"
 readonly jdk_download_url2=$(
     curl -s $jdk_download_url1 | \
@@ -22,7 +22,7 @@ readonly jdk_download_url2=$(
 readonly jdk_download_url3="${url}${jdk_download_url2}"
 readonly jdk_download_url4=$(
     curl -s $jdk_download_url3 | \
-    egrep -o "http\:\/\/download.oracle\.com\/otn-pub\/java\/jdk\/[8-9](u[0-9]+|\+).*\/jdk-${jdk_version}.*(-|_)windows-(x64|x64_bin).$ext"
+    egrep -o "https\:\/\/download.oracle\.com\/otn-pub\/java\/jdk\/[8-9](u[0-9]+|\+).*\/jdk-${jdk_version}.*(-|_)windows-(x64|x64_bin).$ext"
 )
 
 for dl_url in ${jdk_download_url4[@]}; do
