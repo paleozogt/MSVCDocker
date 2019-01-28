@@ -20,7 +20,7 @@ Then we can build the example project that uses Java JNI / Python Extensions / T
 ```
 ✗ mkdir .build; cd .build
 
-✗ vcwine cmake ../test -DCMAKE_BUILD_TYPE=RELEASE
+✗ vcwine cmake ../test -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM"
 -- The C compiler identification is MSVC 19.15.26726.0
 -- The CXX compiler identification is MSVC 19.15.26726.0
 -- Check for working C compiler: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.15.26726/bin/Hostx64/x64/cl.exe
