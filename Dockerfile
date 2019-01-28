@@ -18,7 +18,7 @@ RUN dpkg --add-architecture i386 && \
 
 # install wine
 RUN apt-get update && apt-get install -y --install-recommends \
-    winehq-stable \
+    winehq-stable=4.0~xenial \
  && rm -rf /var/lib/apt/lists/*
 
 # install winetricks
