@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y \
 
 # setup wine
 ENV WINEARCH win64
-ENV WINEPREFIX=/opt/windows
+ENV WINEPREFIX=/opt/win
 RUN winetricks win10
 RUN wget https://dl.winehq.org/wine/wine-mono/4.7.3/wine-mono-4.7.3.msi && \
     wine msiexec /i wine-mono-4.7.3.msi && \
