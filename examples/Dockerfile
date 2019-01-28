@@ -8,9 +8,9 @@ RUN apt-get update && apt-get install -y \
 # java jdk in wine
 ADD get_oracle_jdk.sh get_oracle_jdk.sh
 RUN ./get_oracle_jdk.sh && \
-    vcwine jdk-8u192-windows-x64.exe /s && \
+    vcwine jdk-8u202-windows-x64.exe /s && \
     rm -f get_oracle_jdk.sh *.exe
-ENV WINEPATH="C:\\Program Files\\Java\\jdk1.8.0_192\\bin;$WINEPATH"
+ENV WINEPATH="C:\\Program Files\\Java\\jdk1.8.0_202\\bin;$WINEPATH"
 RUN vcwine java -version
 RUN vcwine javac -version
 
