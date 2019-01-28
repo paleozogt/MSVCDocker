@@ -24,3 +24,12 @@ RUN vcwine python -m ensurepip && \
     vcwine pip install virtualenv
 RUN vcwine python --version
 RUN vcwine pip --version
+
+# tcl in wine
+RUN wget https://downloads.activestate.com/ActiveTcl/releases/8.6.8.0/ActiveTcl-8.6.8.0-MSWin32-x64.exe && \
+    WINEDEBUG= vcwine ActiveTcl-8.6.8.0-MSWin32-x64.exe /exenoui /exenoupdates /quiet /norestart && \
+    rm *.exe
+ENV WINEPATH="C:\\ActiveTcl\\bin;$WINEPATH"
+RUN echo 'puts $tcl_version' > test.tcl && \
+    vcwine tclsh test.tcl && \
+    rm *.tcl
