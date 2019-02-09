@@ -44,6 +44,10 @@ RUN wget https://dl.winehq.org/wine/wine-mono/4.7.3/wine-mono-4.7.3.msi && \
 RUN wineboot -r
 RUN wine cmd.exe /c echo '%ProgramFiles%'
 
+# dotnet in wine
+RUN winetricks -q dotnet472
+RUN winetricks win10
+
 # bring over the snapshots
 ARG MSVC
 ADD build/msvc$MSVC/snapshots snapshots
@@ -51,9 +55,6 @@ ADD build/msvc$MSVC/snapshots snapshots
 # import the snapshot files
 RUN cd $WINEPREFIX/drive_c && \
     unzip -n $HOME/snapshots/CMP/files.zip
-
-# import registry snapshot
-RUN wine reg import $HOME/snapshots/SNAPSHOT-02/HKLM.reg
 
 # import environment snapshot
 ADD dockertools/diffenv diffenv
