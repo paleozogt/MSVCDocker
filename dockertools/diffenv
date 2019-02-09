@@ -2,8 +2,8 @@
 set -e
 set -u
 
-ENV1="/tmp/env1"
-ENV2="/tmp/env2"
+ENV1="$PWD/env1"
+ENV2="$PWD/env2"
 ENVTO="$3"
 
 # convert line endings
