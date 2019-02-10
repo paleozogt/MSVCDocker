@@ -37,3 +37,10 @@ ENV WINEPATH="C:\\ActiveTcl\\bin;$WINEPATH"
 RUN echo 'puts $tcl_version' > test.tcl && \
     vcwine tclsh test.tcl && \
     rm *.tcl
+
+# make sure we build the example proj
+ADD test test
+RUN mkdir test/.build && cd test/.build && \
+    vcwine cmake .. -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM" && \
+    vcwine jom && \
+    cd .. && rm -rf test
