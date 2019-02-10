@@ -1,10 +1,7 @@
 ARG MSVC
 FROM msvc:$MSVC
 
-# dotnet in wine
-RUN WINEDEBUG= winetricks -q dotnet472
-RUN winetricks win10
-
+# curl
 RUN apt-get update && apt-get install -y \
     curl \
  && rm -rf /var/lib/apt/lists/*
@@ -37,6 +34,33 @@ ENV WINEPATH="C:\\ActiveTcl\\bin;$WINEPATH"
 RUN echo 'puts $tcl_version' > test.tcl && \
     vcwine tclsh test.tcl && \
     rm *.tcl
+
+# make on host
+RUN apt-get update && apt-get install -y \
+    make \
+ && rm -rf /var/lib/apt/lists/*
+
+# cmake on host
+ARG CMAKE_SERIES_VER=3.12
+ARG CMAKE_VERS=$CMAKE_SERIES_VER.1
+RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-Linux-x86_64.sh -O cmake.sh && \
+    sh $HOME/cmake.sh --prefix=/usr/local --skip-license && \
+    rm -rf $HOME/cmake*
+RUN cmake --version
+
+# cmake in wine
+RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-win64-x64.zip -O cmake.zip && \
+    unzip $HOME/cmake.zip && \
+    cp -R cmake-*/* $WINEPREFIX/drive_c/tools && \
+    rm -rf cmake*
+RUN vcwine cmake --version
+
+# jom in wine
+RUN wget http://download.qt.io/official_releases/jom/jom.zip -O jom.zip && \
+    unzip -d jom $HOME/jom.zip && \
+    mv jom/jom.exe $WINEPREFIX/drive_c/tools/bin && \
+    rm -rf jom*
+RUN vcwine jom /VERSION
 
 # make sure we build the example proj
 ADD test test

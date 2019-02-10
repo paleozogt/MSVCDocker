@@ -95,48 +95,6 @@ helloworld.obj
 hello world from win x86 msvc v1915
 ```
 
-### CMake with cl
-
-Windows versions of [CMake](https://cmake.org/) and [JOM](https://wiki.qt.io/Jom) are also included, so we can build Hello World that way:
-```
-✗ mkdir -p build/test
-✗ cd build/test
-
-✗ vcwine cmake ../../test -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM"
--- The C compiler identification is MSVC 19.15.26726.0
--- The CXX compiler identification is MSVC 19.15.26726.0
--- Check for working C compiler: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.15.26726/bin/Hostx64/x64/cl.exe
--- Check for working C compiler: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.15.26726/bin/Hostx64/x64/cl.exe -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Detecting C compile features
--- Detecting C compile features - done
--- Check for working CXX compiler: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.15.26726/bin/Hostx64/x64/cl.exe
--- Check for working CXX compiler: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.15.26726/bin/Hostx64/x64/cl.exe -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Configuring done
--- Generating done
--- Build files have been written to: Z:/Users/paleozogt/Development/test/MSVCDocker/build/test
-
-
-✗ vcwine jom
-jom 1.1.2 - empower your cores
-jom: parallel job execution disabled for Makefile
-Scanning dependencies of target helloworld
-[ 50%] Building CXX object CMakeFiles/helloworld.dir/helloworld.cpp.obj
-helloworld.cpp
-[100%] Linking CXX executable helloworld.exe
-[100%] Built target helloworld
-
-
-✗ vcwine helloworld.exe
-hello world from win x86_64 msvc v1915
-
-```
-
 ### LLVM's clang-cl
 
 [Clang](https://clang.llvm.org/) can cross-compile MSVC-compatible binaries with [clang-cl](http://blog.llvm.org/2018/03/clang-is-now-used-to-build-chrome-for.html).
@@ -161,47 +119,9 @@ Even though its 2018, maybe we want to build for 32-bit:
 hello world from win x86 clang v7
 ```
 
-### CMake with clang-cl
+## Examples
 
-Linux versions of [CMake](https://cmake.org/) and [Make](https://www.gnu.org/software/make/manual/html_node/Overview.html#Overview) are also included, so we can build Hello World that way.
-
-(Note that we have to be careful not to use the Windows/Wine CMake.)
-
-```
-✗ mkdir -p build/test
-✗ cd build/test
-
-✗ vcwine bash -c "cmake ../../test -DCMAKE_BUILD_TYPE=RELEASE"
--- The C compiler identification is Clang 7.0.0
--- The CXX compiler identification is Clang 7.0.0
--- Check for working C compiler: /usr/local/bin/clang-cl
--- Check for working C compiler: /usr/local/bin/clang-cl -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - failed
--- Detecting C compile features
--- Detecting C compile features - failed
--- Check for working CXX compiler: /usr/local/bin/clang-cl
--- Check for working CXX compiler: /usr/local/bin/clang-cl -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - failed
--- Detecting CXX compile features
--- Detecting CXX compile features - failed
--- Configuring done
--- Generating done
--- Build files have been written to: /host/Users/paleozogt/Development/test/MSVCDocker/build/test
-
-
-✗ vcwine bash -c make
-Scanning dependencies of target helloworld
-[ 50%] Building CXX object CMakeFiles/helloworld.dir/helloworld.cpp.o
-[100%] Linking CXX executable helloworld
-[100%] Built target helloworld
-
-
-✗ vcwine helloworld.exe
-hello world from win x86_64 clang v7
-```
-
+For more examples, including the use of CMake and high-level language bindings, see the [examples](examples) subfolder.
 
 ## Known Issues
 
@@ -212,7 +132,7 @@ hello world from win x86_64 clang v7
   vcwine msbuild
   ```
 
-  MSBuild depends heavily on .Net, which Wine often has trouble with (especially with `WINEARCH=win64`).
+  If you're using CMake, use the "NMake Makefiles", "NMake Makefiles JOM", or "Ninja" generators.
 
 * When using MSVC's cl, release builds work fine but debug builds don't quite work.
 

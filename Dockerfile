@@ -82,9 +82,8 @@ ADD dockertools/vcwine /usr/local/bin/vcwine
 ADD dockertools/clang-cl /usr/local/bin/clang-cl
 ADD dockertools/lld-link /usr/local/bin/lld-link
 
-# make a tools dir
-RUN mkdir -p $WINEPREFIX/drive_c/tools/bin
-ENV WINEPATH C:\\tools\\bin
+# clean up
+RUN rm -rf $HOME/snapshots
 
 # install clang on host (for clang-cl)
 ENV CLANG_HOME=/opt/bin
@@ -97,32 +96,16 @@ RUN wget https://releases.llvm.org/7.0.0/clang+llvm-7.0.0-x86_64-linux-gnu-ubunt
 RUN clang-cl --version
 RUN lld-link --version
 
-# install make on host
-RUN apt-get update && apt-get install -y \
-    make \
- && rm -rf /var/lib/apt/lists/*
+# get _MSC_VER for use with clang-cl
+ADD dockertools/msc_ver.cpp msc_ver.cpp
+RUN vcwine cl msc_ver.cpp && \
+    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars32  && \
+    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars64  && \
+    rm *.cpp
 
-# install cmake on host
-ARG CMAKE_SERIES_VER=3.12
-ARG CMAKE_VERS=$CMAKE_SERIES_VER.1
-RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-Linux-x86_64.sh -O cmake.sh && \
-    sh $HOME/cmake.sh --prefix=/usr/local --skip-license && \
-    rm -rf $HOME/cmake*
-RUN cmake --version
-
-# install cmake in wine
-RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-win64-x64.zip -O cmake.zip && \
-    unzip $HOME/cmake.zip && \
-    mv cmake-*/* $WINEPREFIX/drive_c/tools && \
-    rm -rf cmake*
-RUN vcwine cmake --version
-
-# install jom in wine
-RUN wget http://download.qt.io/official_releases/jom/jom.zip -O jom.zip && \
-    unzip -d jom $HOME/jom.zip && \
-    mv jom/jom.exe $WINEPREFIX/drive_c/tools/bin && \
-    rm -rf jom*
-RUN vcwine jom /VERSION
+# make a tools dir
+RUN mkdir -p $WINEPREFIX/drive_c/tools/bin
+ENV WINEPATH C:\\tools\\bin
 
 # install which in wine (for easy path debugging)
 RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
@@ -130,20 +113,6 @@ RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.z
     unzip $HOME/which.zip && \
     rm $HOME/which.zip
 RUN vcwine which --version
-
-# clean up
-RUN rm -rf $HOME/snapshots
-
-# reboot for luck
-RUN winetricks win10
-RUN wineboot -r
-
-# get _MSC_VER for use with clang-cl
-ADD dockertools/msc_ver.cpp msc_ver.cpp
-RUN vcwine cl msc_ver.cpp && \
-    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars32  && \
-    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars64  && \
-    rm *.cpp
 
 # make sure we can compile with MSVC
 ADD test test
@@ -158,6 +127,10 @@ RUN cd test && \
     clang-cl helloworld.cpp && \
     vcwine helloworld.exe && \
     cd .. && rm -rf test
+
+# reboot for luck
+RUN winetricks win10
+RUN wineboot -r
 
 # turn off wine's verbose logging
 ENV WINEDEBUG=-all
