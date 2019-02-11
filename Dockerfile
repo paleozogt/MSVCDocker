@@ -44,15 +44,24 @@ RUN wine cmd.exe /c echo '%ProgramFiles%'
 RUN winetricks -q dotnet472
 RUN winetricks win10
 
-# bring over the snapshots
+# install clang on host (for clang-cl)
+ENV CLANG_HOME=/opt/bin
+ENV CC=clang-cl
+ENV CXX=clang-cl
+RUN wget https://releases.llvm.org/7.0.0/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
+    tar xvf *.tar.xz && \
+    cp -r clang*/* /opt && \
+    rm -rf clang*
+
+# bring over the msvc snapshots
 ARG MSVC
 ADD build/msvc$MSVC/snapshots snapshots
 
-# import the snapshot files
+# import the msvc snapshot files
 RUN cd $WINEPREFIX/drive_c && \
     unzip -n $HOME/snapshots/CMP/files.zip
 
-# import environment snapshot
+# import msvc environment snapshot
 ADD dockertools/diffenv diffenv
 ADD dockertools/make-vcclang-vars make-vcclang-vars
 RUN mkdir /etc/vcwine /etc/vcclang
@@ -71,7 +80,7 @@ RUN find $WINEPREFIX/drive_c -iname v[cs]\*.bat | xargs -Ifile $HOME/hackvcvars 
     find $WINEPREFIX/drive_c -iname win\*.bat | xargs -Ifile $HOME/hackvcvars "file" && \
     rm hackvcvars
 
-# fix inconsistent casing in filenames
+# fix inconsistent casing in msvc filenames
 RUN find $WINEPREFIX -name Include -execdir mv Include include \; || \
     find $WINEPREFIX -name Lib -execdir mv Lib lib \; || \
     find $WINEPREFIX -name \*.Lib -execdir rename 'y/A-Z/a-z/' {} \;
@@ -79,22 +88,9 @@ RUN find $WINEPREFIX -name Include -execdir mv Include include \; || \
 # vcwine
 ENV MSVCARCH=64
 ADD dockertools/vcwine /usr/local/bin/vcwine
-ADD dockertools/clang-cl /usr/local/bin/clang-cl
-ADD dockertools/lld-link /usr/local/bin/lld-link
 
 # clean up
 RUN rm -rf $HOME/snapshots
-
-# install clang on host (for clang-cl)
-ENV CLANG_HOME=/opt/bin
-ENV CC=clang-cl
-ENV CXX=clang-cl
-RUN wget https://releases.llvm.org/7.0.0/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
-    tar xvf *.tar.xz && \
-    cp -r clang*/* /opt && \
-    rm -rf clang*
-RUN clang-cl --version
-RUN lld-link --version
 
 # get _MSC_VER for use with clang-cl
 ADD dockertools/msc_ver.cpp msc_ver.cpp
@@ -102,6 +98,12 @@ RUN vcwine cl msc_ver.cpp && \
     echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars32  && \
     echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars64  && \
     rm *.cpp
+
+# clang-cl shims
+ADD dockertools/clang-cl /usr/local/bin/clang-cl
+ADD dockertools/lld-link /usr/local/bin/lld-link    
+RUN clang-cl --version
+RUN lld-link --version
 
 # make a tools dir
 RUN mkdir -p $WINEPREFIX/drive_c/tools/bin
