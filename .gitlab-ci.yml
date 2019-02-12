@@ -5,44 +5,77 @@ variables:
     GIT_STRATEGY: clone
 
 before_script:
-  - vagrant destroy --force
+  - mkdir -p build
 
-after_script:
-  - vagrant destroy --force
-
-.build_template: &build_template
+.snapshot_template: &snapshot_template
+    stage: build
+    before_script:
+      - vagrant destroy --force
+    after_script:
+      - vagrant destroy --force
     script:
         - export MSVC_VER=`echo $CI_JOB_NAME | cut -d'c' -f2`
-        - make $CI_JOB_NAME
-
-        - cd examples
-        - make windev$MSVC_VER
-
-        - docker tag msvc:$MSVC_VER $CI_REGISTRY_IMAGE/msvc:$MSVC_VER
-        - docker images
-
-        - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-        - docker push $CI_REGISTRY_IMAGE/msvc:$MSVC_VER
-
-        - docker rmi msvc:$MSVC_VER
-        - docker rmi $CI_REGISTRY_IMAGE/msvc:$MSVC_VER
+        - make snapshot$MSVC_VER | tee build/snapshot-$MSVC_VER.log
     tags:
-        - docker
         - virtualbox
     only:
         - master
         - production
         - tags
         - web
+    artifacts:
+        name: "$CI_JOB_NAME"
+        when: always
+        expire_in: 1 week
+        paths:
+            - build/*
 
-msvc15:
-    <<: *build_template
+snapshot-msvc15:
+    <<: *snapshot_template
 
-msvc14:
-    <<: *build_template
+snapshot-msvc14:
+    <<: *snapshot_template
 
-msvc12:
-    <<: *build_template
+snapshot-msvc12:
+    <<: *snapshot_template
 
-msvc11:
-    <<: *build_template
+snapshot-msvc11:
+    <<: *snapshot_template
+
+.docker_script: &docker_script |
+    for MSVC_VER in "${msvcs[@]}"
+    do
+        make buildimage$MSVC_VER | tee build/buildimage-$MSVC_VER.log
+
+        cd examples
+        make windev$MSVC_VER | tee -a ../build/windev-$MSVC_VER.log
+        cd ..
+
+        docker tag msvc:$MSVC_VER $CI_REGISTRY_IMAGE/msvc:$MSVC_VER
+        docker images
+
+        docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+        docker push $CI_REGISTRY_IMAGE/msvc:$MSVC_VER
+        docker rmi $CI_REGISTRY_IMAGE/msvc:$MSVC_VER
+        docker rmi msvc:$MSVC_VER
+        docker rmi windev:$MSVC_VER
+    done
+
+docker:
+    stage: deploy
+    script:
+        - msvcs=(15 14 12 11)
+        - *docker_script
+    tags:
+        - docker
+    only:
+        - master
+        - production
+        - tags
+        - web
+    artifacts:
+        name: "$CI_JOB_NAME"
+        when: always
+        expire_in: 1 week
+        paths:
+            - build/*.log
