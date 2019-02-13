@@ -59,7 +59,9 @@ ADD build/msvc$MSVC/snapshots snapshots
 
 # import the msvc snapshot files
 RUN cd $WINEPREFIX/drive_c && \
-    unzip -n $HOME/snapshots/CMP/files.zip
+    unzip -n $HOME/snapshots/CMP/files.zip && \
+    cp -R $WINEPREFIX/drive_c/Windows/* $WINEPREFIX/drive_c/windows && \
+    rm -rf $WINEPREFIX/drive_c/Windows
 
 # import msvc environment snapshot
 ADD dockertools/diffenv diffenv
