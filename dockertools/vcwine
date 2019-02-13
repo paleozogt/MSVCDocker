@@ -27,4 +27,4 @@ elif [[ $VCINSTALLDIR = *"12.0"* ]]; then
 fi
 
 # pass along script args to wine
-wine "$@"
+wine64 "$@"
