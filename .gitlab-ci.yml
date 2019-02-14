@@ -43,6 +43,16 @@ snapshot-msvc11:
     <<: *snapshot_template
 
 .docker_script: &docker_script |
+    # build and push the common wine base image
+    make buildwine
+    WINE_VER=$(docker images --format "{{.Tag}}" wine)
+    docker tag wine:$WINE_VER $CI_REGISTRY_IMAGE/wine:$WINE_VER
+    docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    docker push $CI_REGISTRY_IMAGE/wine:$WINE_VER
+    docker rmi $CI_REGISTRY_IMAGE/wine:$WINE_VER
+    docker rmi wine:$WINE_VER
+
+    # build the wine+msvc images
     for MSVC_VER in "${msvcs[@]}"
     do
         make buildimage$MSVC_VER | tee build/buildimage-$MSVC_VER.log

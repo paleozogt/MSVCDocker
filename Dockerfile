@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:xenial as winebase
 USER root
 WORKDIR /root
 
@@ -17,8 +17,9 @@ RUN dpkg --add-architecture i386 && \
     rm *.key
 
 # install wine
+ARG WINE_VER
 RUN apt-get update && apt-get install -y --install-recommends \
-    winehq-stable=4.0~xenial \
+    winehq-stable=$WINE_VER~xenial \
  && rm -rf /var/lib/apt/lists/*
 
 # install winetricks
@@ -53,6 +54,47 @@ RUN wget https://releases.llvm.org/7.0.0/clang+llvm-7.0.0-x86_64-linux-gnu-ubunt
     cp -r clang*/* /opt && \
     rm -rf clang*
 
+# clang-cl shims
+RUN mkdir /etc/vcclang && \
+    touch /etc/vcclang/vcvars32 && \
+    touch /etc/vcclang/vcvars64
+ADD dockertools/clang-cl /usr/local/bin/clang-cl
+ADD dockertools/lld-link /usr/local/bin/lld-link    
+RUN clang-cl --version
+RUN lld-link --version
+
+# vcwine
+RUN mkdir /etc/vcwine && \
+    touch /etc/vcwine/vcvars32 && \
+    touch /etc/vcwine/vcvars64
+ADD dockertools/vcwine /usr/local/bin/vcwine
+
+# make a tools dir
+RUN mkdir -p $WINEPREFIX/drive_c/tools/bin
+ENV WINEPATH C:\\tools\\bin
+
+# install which in wine (for easy path debugging)
+RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
+    cd "$WINEPREFIX/drive_c/tools" && \
+    unzip $HOME/which.zip && \
+    rm $HOME/which.zip
+RUN vcwine which --version
+
+# turn off wine's verbose logging
+ENV WINEDEBUG=-all
+
+# entrypoint
+ENV MSVCARCH=64
+ADD dockertools/vcentrypoint /usr/local/bin/vcentrypoint
+ENTRYPOINT [ "/usr/local/bin/vcentrypoint" ]
+
+# reboot for luck
+RUN winetricks win10
+RUN wineboot -r
+
+#################################
+FROM winebase as msvc
+
 # bring over the msvc snapshots
 ARG MSVC
 ADD build/msvc$MSVC/snapshots snapshots
@@ -66,12 +108,14 @@ RUN cd $WINEPREFIX/drive_c && \
 # import msvc environment snapshot
 ADD dockertools/diffenv diffenv
 ADD dockertools/make-vcclang-vars make-vcclang-vars
-RUN mkdir /etc/vcwine /etc/vcclang
 RUN ./diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars32.txt /etc/vcwine/vcvars32 && \
     ./make-vcclang-vars /etc/vcwine/vcvars32 /etc/vcclang/vcvars32
 RUN ./diffenv $HOME/snapshots/SNAPSHOT-01/env.txt $HOME/snapshots/SNAPSHOT-02/vcvars64.txt /etc/vcwine/vcvars64 && \
     ./make-vcclang-vars /etc/vcwine/vcvars64 /etc/vcclang/vcvars64
 RUN rm diffenv make-vcclang-vars
+
+# clean up
+RUN rm -rf $HOME/snapshots
 
 # 64-bit linking has trouble finding cvtres, so help it out
 RUN find $WINEPREFIX -iname x86_amd64 | xargs -Ifile cp "file/../cvtres.exe" "file"
@@ -87,36 +131,12 @@ RUN find $WINEPREFIX -name Include -execdir mv Include include \; || \
     find $WINEPREFIX -name Lib -execdir mv Lib lib \; || \
     find $WINEPREFIX -name \*.Lib -execdir rename 'y/A-Z/a-z/' {} \;
 
-# vcwine
-ENV MSVCARCH=64
-ADD dockertools/vcwine /usr/local/bin/vcwine
-
-# clean up
-RUN rm -rf $HOME/snapshots
-
 # get _MSC_VER for use with clang-cl
 ADD dockertools/msc_ver.cpp msc_ver.cpp
 RUN vcwine cl msc_ver.cpp && \
     echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars32  && \
     echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars64  && \
     rm *.cpp
-
-# clang-cl shims
-ADD dockertools/clang-cl /usr/local/bin/clang-cl
-ADD dockertools/lld-link /usr/local/bin/lld-link    
-RUN clang-cl --version
-RUN lld-link --version
-
-# make a tools dir
-RUN mkdir -p $WINEPREFIX/drive_c/tools/bin
-ENV WINEPATH C:\\tools\\bin
-
-# install which in wine (for easy path debugging)
-RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
-    cd "$WINEPREFIX/drive_c/tools" && \
-    unzip $HOME/which.zip && \
-    rm $HOME/which.zip
-RUN vcwine which --version
 
 # make sure we can compile with MSVC
 ADD test test
@@ -135,9 +155,3 @@ RUN cd test && \
 # reboot for luck
 RUN winetricks win10
 RUN wineboot -r
-
-# turn off wine's verbose logging
-ENV WINEDEBUG=-all
-
-ADD dockertools/vcentrypoint /usr/local/bin/vcentrypoint
-ENTRYPOINT [ "/usr/local/bin/vcentrypoint" ]
