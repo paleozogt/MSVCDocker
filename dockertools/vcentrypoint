@@ -6,5 +6,5 @@ lld-link) "$@";;
 bash) "$@";;
 zsh) "$@";;
 "") vcwine cmd;;
-*) vcwine "$@";;
+*) vcwine cmd /c "$@";;
 esac
