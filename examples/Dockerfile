@@ -8,23 +8,29 @@ RUN apt-get update && apt-get install -y \
 
 # java jdk in wine
 ADD get_oracle_jdk.sh get_oracle_jdk.sh
-RUN ./get_oracle_jdk.sh && \
-    vcwine jdk-8u202-windows-x64.exe /s && \
-    rm -f get_oracle_jdk.sh *.exe
-ENV WINEPATH="C:\\Program Files\\Java\\jdk1.8.0_202\\bin;$WINEPATH"
-RUN vcwine java -version
-RUN vcwine javac -version
+RUN apt-get update && apt-get install -y curl && \
+    if [ "$MSVCARCH" -eq 32 ]; then JAVA_ARCH="i586"; else JAVA_ARCH="x64"; fi && \
+    ./get_oracle_jdk.sh 8 $JAVA_ARCH && \
+    wine jdk-8u202-windows-$JAVA_ARCH.exe /s INSTALLDIR=C:\\Java && \
+    rm -f get_oracle_jdk.sh *.exe && \
+    apt-get remove -y curl && \
+    rm -rf /var/lib/apt/lists/*
+ENV WINEPATH="C:\\Java\\bin;$WINEPATH"
+RUN wine java -version
+RUN wine javac -version
 
-# python in wine
-RUN wget https://www.python.org/ftp/python/2.7.12/python-2.7.12.amd64.msi && \
-    vcwine msiexec /i python-2.7.12.amd64.msi /passive /norestart ADDLOCAL=ALL && \
+# python2 in wine
+RUN if [ "$MSVCARCH" -eq 32 ]; then PYTHON2_ARCH=""; else PYTHON2_ARCH=".amd64"; fi && \
+    wget https://www.python.org/ftp/python/2.7.12/python-2.7.12$PYTHON2_ARCH.msi && \
+    wine msiexec /i python-2.7.12$PYTHON2_ARCH.msi /passive /norestart ADDLOCAL=ALL && \
+    cp $WINEPREFIX/drive_c/Python27/python.exe $WINEPREFIX/drive_c/Python27/python2.exe && \
     rm *.msi
 ENV WINEPATH="C:\\Python27\\;C:\\Python27\\Scripts;$WINEPATH"
-RUN vcwine python -m ensurepip && \
-    vcwine python -m pip install --upgrade pip && \
-    vcwine pip install virtualenv
-RUN vcwine python --version
-RUN vcwine pip --version
+RUN wine python2 -m ensurepip && \
+    wine python2 -m pip install --upgrade pip && \
+    wine pip2 install virtualenv wheel
+RUN wine python2 --version
+RUN wine pip2 --version
 
 # tcl in wine
 RUN wget https://downloads.activestate.com/ActiveTcl/releases/8.6.8.0/ActiveTcl-8.6.8.0-MSWin32-x64.exe && \

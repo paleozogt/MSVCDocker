@@ -7,7 +7,8 @@
 # ext: rpm or tar.gz
 
 jdk_version=${1:-8}
-ext=${2:-exe}
+jdk_arch=${2:-x64}
+ext=${3:-exe}
 
 readonly url="https://www.oracle.com"
 readonly jdk_download_url1="$url/technetwork/java/javase/downloads/index.html"
@@ -22,10 +23,11 @@ readonly jdk_download_url2=$(
 readonly jdk_download_url3="${url}${jdk_download_url2}"
 readonly jdk_download_url4=$(
     curl -s $jdk_download_url3 | \
-    egrep -o "https\:\/\/download.oracle\.com\/otn-pub\/java\/jdk\/[8-9](u[0-9]+|\+).*\/jdk-${jdk_version}.*(-|_)windows-(x64|x64_bin).$ext"
+    egrep -o "https\:\/\/download.oracle\.com\/otn-pub\/java\/jdk\/[8-9](u[0-9]+|\+).*\/jdk-${jdk_version}.*(-|_)windows-(${jdk_arch}|${jdk_arch}_bin).$ext"
 )
 
 for dl_url in ${jdk_download_url4[@]}; do
+    echo downloading $dl_url
     wget --no-cookies \
          --no-check-certificate \
          --header "Cookie: oraclelicense=accept-securebackup-cookie" \
