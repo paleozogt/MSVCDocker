@@ -147,8 +147,9 @@ RUN vcwine cl msc_ver.cpp && \
 # make sure we can compile with MSVC
 ADD test test
 RUN cd test && \
-    vcwine cl helloworld.cpp && \
-    vcwine helloworld.exe && \
+    MSVCARCH=32 vcwine cl helloworld.cpp && vcwine helloworld.exe && \
+    MSVCARCH=64 vcwine cl helloworld.cpp && vcwine helloworld.exe && \
+    vcwine cl helloworld.cpp && vcwine helloworld.exe && \
     cd .. && rm -rf test
 
 # make sure we can compile with clang-cl
