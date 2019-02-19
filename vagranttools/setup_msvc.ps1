@@ -10,12 +10,29 @@ If ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
 }
 
 If ($msvc_ver -eq "10") {
-    # sadly no "build tools" for 2010
-    choco install -y vcexpress2010
+    $dotNetClientPath = "HKLM:\Software\Microsoft\NET Framework Setup\NDP\v4\Client"
+    $dotNetFullPath   = "HKLM:\Software\Microsoft\NET Framework Setup\NDP\v4\Full"
+    $dotNetClientVer  = $(Get-ItemProperty -Path $dotNetClientPath).Version
+    $dotNetFullVer    = $(Get-ItemProperty -Path $dotNetFullPath).Version
 
-    $vcvarsbat="$programFilesX86\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
-    $vcvars32="`"$vcvarsbat`" x86"
-    $vcvars64="`"$vcvarsbat`" x86_amd64"
+    # hack the dotnet version to make the Windows SDK installer happy
+    subinacl.exe /subkeyreg "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\NET Framework Setup\NDP\v4" /setowner="$env:UserName"
+    subinacl.exe /subkeyreg "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\NET Framework Setup\NDP\v4" /grant="$env:UserName"=f
+    reg ADD "HKLM\Software\Microsoft\NET Framework Setup\NDP\v4\Full" /v Version /t REG_SZ /d 4.0.30319 /reg:32 /f
+    reg ADD "HKLM\Software\Microsoft\NET Framework Setup\NDP\v4\Client" /v Version /t REG_SZ /d 4.0.30319 /reg:32 /f
+
+    # we need windows sdk for 64-bit compilers
+    choco install -y vcexpress2010
+    choco install -y windows-sdk-7.1
+
+    # restore the dotnet version
+    reg ADD "HKLM\Software\Microsoft\NET Framework Setup\NDP\v4\Full" /v Version /t REG_SZ /d "$dotNetClientVer" /reg:32 /f
+    reg ADD "HKLM\Software\Microsoft\NET Framework Setup\NDP\v4\Client" /v Version /t REG_SZ /d "$dotNetFullVer" /reg:32 /f
+
+    $vcvars32bat="$programFilesX86\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
+    $vcvars64bat="$env:ProgramFiles\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
+    $vcvars32="`"$vcvars32bat`" x86"
+    $vcvars64="`"$vcvars64bat`" /x64"
 } ElseIf ($msvc_ver -eq "11") {
     # sadly no "build tools" for 2012
     choco install -y visualstudio2012wdx
@@ -44,7 +61,7 @@ If ($msvc_ver -eq "10") {
     $vcvars64="`"$programFilesX86\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat`""
 
     # There's a bug in this version of the msvc installer where choco will exit before the installer is done.
-    # We have to some workarounds to wait until everything is done.
+    # We have to wait until everything is done.
 
     # wait for the vcvars file to appear
     while (!(Test-Path $vcvarsbat)) {

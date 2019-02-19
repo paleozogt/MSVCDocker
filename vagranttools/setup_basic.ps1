@@ -54,3 +54,17 @@ cp $regdiffName/* C:\ProgramData\chocolatey\bin\
 rm -r -fo $regdiffArchivePath
 rm -r -fo $regdiffName
 which regdiff
+
+# subinacl (sadly not in choco)
+$subinaclName="subinacl.msi"
+$subinaclArchive="$subinaclName"
+$subinaclArchivePath="C:\Windows\Temp\$subinaclArchive"
+$subinaclUrl="https://download.microsoft.com/download/1/7/d/17d82b72-bc6a-4dc8-bfaa-98b37b22b367/$subinaclArchive"
+echo $subinaclUrl
+(New-Object System.Net.WebClient).DownloadFile($subinaclUrl, $subinaclArchivePath)
+Start-Process -FilePath msiexec -ArgumentList '/i',"$subinaclArchivePath",'/q' -Wait
+rm -r -fo $subinaclArchivePath
+$env:Path= "$programFilesX86\Windows Resource Kits\Tools\;$env:Path"
+[Environment]::SetEnvironmentVariable("Path", "$env:Path", "Machine")
+refreshenv
+which subinacl

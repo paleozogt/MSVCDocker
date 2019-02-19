@@ -155,8 +155,7 @@ RUN cd test && \
 # make sure we can compile with clang-cl
 ADD test test
 RUN cd test && \
-    clang-cl helloworld.cpp && \
-    vcwine helloworld.exe && \
+    if [ "$MSVC" -gt "10" ] ; then clang-cl helloworld.cpp && vcwine helloworld.exe ; fi && \
     cd .. && rm -rf test
 
 # reboot for luck

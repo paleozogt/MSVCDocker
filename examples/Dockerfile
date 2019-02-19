@@ -71,6 +71,5 @@ RUN vcwine jom /VERSION
 # make sure we build the example proj
 ADD test test
 RUN mkdir test/.build && cd test/.build && \
-    vcwine cmake .. -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM" && \
-    vcwine jom && \
+    if [ "$MSVC" -gt "10" ] ; then vcwine cmake .. -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM" && vcwine jom ; fi && \
     cd .. && rm -rf test
