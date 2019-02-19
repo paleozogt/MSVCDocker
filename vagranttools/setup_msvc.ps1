@@ -9,7 +9,20 @@ If ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
     $programFilesX86= $env:ProgramFiles
 }
 
-If ($msvc_ver -eq "10") {
+If ($msvc_ver -eq "9") {
+    $vsName="VCForPython27"
+    $vsArchive="$vsName.msi"
+    $vsArchivePath="C:\Windows\Temp\$vsArchive"
+    $vsUrl="https://download.microsoft.com/download/7/9/6/796EF2E4-801B-4FC4-AB28-B59FBF6D907B/$vsArchive"
+    echo $vsUrl
+    (New-Object System.Net.WebClient).DownloadFile($vsUrl, $vsArchivePath)
+    Start-Process -FilePath msiexec -ArgumentList '/i',"$vsArchivePath",'/q','ALLUSERS=1' -Wait
+    rm -r -fo $vsArchivePath
+
+    $vcvarsbat="$programFilesX86\Common Files\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat"
+    $vcvars32="`"$vcvarsbat`" x86"
+    $vcvars64="`"$vcvarsbat`" x86_amd64"
+} ElseIf ($msvc_ver -eq "10") {
     $dotNetClientPath = "HKLM:\Software\Microsoft\NET Framework Setup\NDP\v4\Client"
     $dotNetFullPath   = "HKLM:\Software\Microsoft\NET Framework Setup\NDP\v4\Full"
     $dotNetClientVer  = $(Get-ItemProperty -Path $dotNetClientPath).Version

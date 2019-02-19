@@ -97,6 +97,7 @@ FROM winebase as msvc
 
 # bring over the msvc snapshots
 ARG MSVC
+ENV MSVC=$MSVC
 ADD build/msvc$MSVC/snapshots snapshots
 
 # import the msvc snapshot files

@@ -21,7 +21,7 @@ To create an `msvc:15` Docker image:
 make msvc15
 ```
 
-MSVC 10, 11, 12, 14, and 15 are supported.
+MSVC 9, 10, 11, 12, 14, and 15 are supported.
 
 Note: The snapshot step can take quite some time, as the MSVC installers are notoriously gigantic and slow.
 

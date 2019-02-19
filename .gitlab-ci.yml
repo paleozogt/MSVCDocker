@@ -45,6 +45,9 @@ snapshot-msvc11:
 snapshot-msvc10:
     <<: *snapshot_template
 
+snapshot-msvc9:
+    <<: *snapshot_template
+
 .docker_script: &docker_script |
     # build and push the common wine base image
     make buildwine
@@ -56,7 +59,7 @@ snapshot-msvc10:
     docker rmi wine:$WINE_VER
 
     # build the wine+msvc images
-    for MSVC_VER in 15 14 12 11 10
+    for MSVC_VER in 15 14 12 11 10 9
     do
         make buildimage$MSVC_VER | tee build/buildimage-$MSVC_VER.log
 

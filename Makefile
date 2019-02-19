@@ -1,4 +1,4 @@
-MSVC_VERS = 15 14 12 11 10
+MSVC_VERS = 15 14 12 11 10 9
 WINE_VER = 4.0
 
 buildwine: Dockerfile
