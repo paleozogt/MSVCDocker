@@ -53,7 +53,7 @@ snapshot-msvc11:
     docker rmi wine:$WINE_VER
 
     # build the wine+msvc images
-    for MSVC_VER in "${msvcs[@]}"
+    for MSVC_VER in 15 14 12 11
     do
         make buildimage$MSVC_VER | tee build/buildimage-$MSVC_VER.log
 
@@ -74,7 +74,6 @@ snapshot-msvc11:
 docker:
     stage: deploy
     script:
-        - msvcs=(15 14 12 11)
         - *docker_script
     tags:
         - docker
