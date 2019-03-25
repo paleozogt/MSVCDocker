@@ -102,6 +102,12 @@ ADD build/msvc$MSVC/snapshots snapshots
 # import the msvc snapshot files
 RUN cd $WINEPREFIX/drive_c && \
     unzip -n $HOME/snapshots/CMP/files.zip && \
+    cd $WINEPREFIX/drive_c/Windows && mkdir -p INF System32 SysWOW64 WinSxS && \
+    mv INF      inf && \
+    mv System32 system32 && \
+    mv SysWOW64 syswow64 && \
+    mv WinSxS   winsxs && \
+    cd $WINEPREFIX/drive_c && \
     cp -R $WINEPREFIX/drive_c/Windows/* $WINEPREFIX/drive_c/windows && \
     rm -rf $WINEPREFIX/drive_c/Windows
 

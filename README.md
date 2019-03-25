@@ -134,8 +134,6 @@ For more examples, including the use of CMake and high-level language bindings, 
 
   If you're using CMake, use the "NMake Makefiles", "NMake Makefiles JOM", or "Ninja" generators.
 
-* When using MSVC's cl, release builds work fine but debug builds don't quite work.
-
 * When using LLVM's clang-cl, paths that begin with `/U` (such as `/Users/`) will cause [strange errors](https://reviews.llvm.org/D29198):
 
   ```
