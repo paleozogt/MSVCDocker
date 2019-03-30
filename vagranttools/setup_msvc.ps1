@@ -77,8 +77,9 @@ If ($msvc_ver -eq "9") {
     # We have to wait until everything is done.
 
     # wait for the vcvars file to appear
-    while (!(Test-Path $vcvarsbat)) {
-        echo "waiting for $vcvarsbat"
+    $testFile = $vcvars32 -replace '"'
+    while (!(Test-Path $testFile)) {
+        echo "waiting for $testFile"
         Start-Sleep 10
     }
 
