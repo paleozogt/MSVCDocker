@@ -1,10 +1,11 @@
 MSVC_VERS = 15 14 12 11 10 9
 WINE_VER = 4.0
+DOCKERCMD = docker
 VAGRANTCMD = vagrant
 VAGRANTARGS = 
 
 buildwine: Dockerfile
-	docker build --target winebase -t wine:$(WINE_VER) --build-arg WINE_VER=$(WINE_VER) .
+	$(DOCKERCMD) build --target winebase -t wine:$(WINE_VER) --build-arg WINE_VER=$(WINE_VER) .
 
 define build-targets
   vagrantsetup$1: Vagrantfile setupbasebox
@@ -18,7 +19,7 @@ define build-targets
   snapshot$1: vagrantsetup$1 buildsnapshot$1
 
   buildimage$1: Dockerfile
-		docker build -f Dockerfile -t msvc:$1 --build-arg WINE_VER=$(WINE_VER) --build-arg MSVC=$1 .
+		$(DOCKERCMD) build -f Dockerfile -t msvc:$1 --build-arg WINE_VER=$(WINE_VER) --build-arg MSVC=$1 .
 
   msvc$1: snapshot$1 buildimage$1
 endef
