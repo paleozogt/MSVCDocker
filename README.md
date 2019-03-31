@@ -9,6 +9,7 @@ The big blocker to getting MSVC in Wine is that even though the software itself 
 ## Requirements
 
  * [Docker](https://www.docker.com/get-started)
+    * If on Linux, allow Docker to be used [without sudo](https://docs.docker.com/engine/installation/linux/linux-postinstall/)
  * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
  * [Vagrant](https://www.vagrantup.com/downloads.html)
     * [Vagrant Reload Plugin](https://github.com/aidanns/vagrant-reload)
