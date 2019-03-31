@@ -4,7 +4,7 @@ DOCKERCMD = docker
 VAGRANTCMD = vagrant
 VAGRANTARGS = 
 
-buildwine: Dockerfile
+buildwine: Dockerfile dockercheck
 	$(DOCKERCMD) build --target winebase -t wine:$(WINE_VER) --build-arg WINE_VER=$(WINE_VER) .
 
 define build-targets
@@ -18,13 +18,18 @@ define build-targets
 
   snapshot$1: vagrantsetup$1 buildsnapshot$1
 
-  buildimage$1: Dockerfile
+  buildimage$1: Dockerfile dockercheck
 		$(DOCKERCMD) build -f Dockerfile -t msvc:$1 --build-arg WINE_VER=$(WINE_VER) --build-arg MSVC=$1 .
 
-  msvc$1: snapshot$1 buildimage$1
+  msvc$1: dockercheck snapshot$1 buildimage$1
 endef
 
 $(foreach element,$(MSVC_VERS),$(eval $(call build-targets,$(element))))
+
+.PHONY: dockercheck
+
+dockercheck:
+	docker images
 
 setupbasebox: ./vagranttools/setupbasebox.sh
 	./vagranttools/setupbasebox.sh
