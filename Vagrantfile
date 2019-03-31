@@ -4,9 +4,10 @@
 Vagrant.require_version ">= 2.1.4"
 
 # plugin checks
-required_plugins = %w(
-  vagrant-reload
-)
+required_plugins = %w(vagrant-reload)
+required_plugins.each do |plugin|
+    raise "\"#{plugin}\" plugin is not installed!" unless Vagrant.has_plugin? plugin
+end
 
 # bring in provisioner that lets us do Posix SSH on windows
 require_relative 'vagranttools/ssh_provisioner.rb'
