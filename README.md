@@ -19,6 +19,7 @@ The big blocker to getting MSVC in Wine is that even though the software itself 
 To create an `msvc:15` Docker image:
 
 ```
+make clean
 make msvc15
 ```
 

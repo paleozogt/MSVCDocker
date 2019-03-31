@@ -26,7 +26,13 @@ endef
 
 $(foreach element,$(MSVC_VERS),$(eval $(call build-targets,$(element))))
 
-.PHONY: dockercheck
+.PHONY: clean dockercheck
+
+clean:
+	rm -rf build/msvc*
+	$(VAGRANTCMD) destroy --force || true
+	$(VAGRANTCMD) global-status --prune || true
+	VBoxManage list vms || true
 
 dockercheck:
 	docker images
