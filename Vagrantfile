@@ -12,8 +12,8 @@ end
 # bring in provisioner that lets us do Posix SSH on windows
 require_relative 'vagranttools/ssh_provisioner.rb'
 
-# msvcs    test , 2008, 2010, 2012, 2013 2015, 2017
-msvcs = [ 'test',    9,   10,   11,   12,  14,   15 ]
+# msvcs    test , 2008, 2010, 2012, 2013, 2015, 2017, 2019
+msvcs = [ 'test',    9,   10,   11,   12,   14,   15,   16 ]
 
 Vagrant.configure("2") do |config|
     # provision a box for each MSVC

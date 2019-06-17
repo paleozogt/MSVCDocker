@@ -23,7 +23,7 @@ make clean
 make msvc15
 ```
 
-MSVC 9, 10, 11, 12, 14, and 15 are supported.
+MSVC 9, 10, 11, 12, 14, 15, and 16 are supported.
 
 Note: The snapshot step can take quite some time, as the MSVC installers are notoriously gigantic and slow.
 
