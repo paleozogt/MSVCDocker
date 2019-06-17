@@ -86,6 +86,12 @@ If ($msvc_ver -eq "9") {
     # wait for the installer process to finish
     echo "waiting for installer to finish"
     Wait-Process -Name vs_installer
+} ElseIf ($msvc_ver -eq "16") {
+    choco install -y visualstudio2019buildtools
+    choco install -y visualstudio2019-workload-vctools
+
+    $vcvars32="`"$programFilesX86\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars32.bat`""
+    $vcvars64="`"$programFilesX86\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat`""
 }
 
 choco install -y vswhere

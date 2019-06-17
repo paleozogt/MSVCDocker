@@ -1,4 +1,4 @@
-MSVC_VERS = 15 14 12 11 10 9
+MSVC_VERS = 16 15 14 12 11 10 9
 
 define build-targets
   windev$1: Dockerfile
