@@ -10,8 +10,10 @@ if [ -z "$baseboxinfo" ]
 then
     mkdir -p build
 
-    wget https://az792536.vo.msecnd.net/vms/VMBuild_20180425/Vagrant/MSEdge/MSEdge.Win10.Vagrant.zip -O build/MSEdge.Win10.Vagrant.zip
-    unzip -d build build/MSEdge.Win10.Vagrant.zip
+    if [ ! -f "build/MSEdge - Win10.box" ]; then
+        wget https://az792536.vo.msecnd.net/vms/VMBuild_20180425/Vagrant/MSEdge/MSEdge.Win10.Vagrant.zip -O build/MSEdge.Win10.Vagrant.zip
+        unzip -d build build/MSEdge.Win10.Vagrant.zip
+    fi
 
     vagrant box add --force "build/MSEdge - Win10.box" --name "Microsoft/EdgeOnWindows10"
     vagrant box list
