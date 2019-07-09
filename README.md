@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/paleozogt/MSVCDocker/_apis/build/status/paleozogt.MSVCDocker?branchName=master)](https://dev.azure.com/paleozogt/MSVCDocker/_build/latest?definitionId=3&branchName=master)
+
 # Microsoft Visual C via Wine in Docker
 
 CI with [MSVC](https://visualstudio.microsoft.com/vs/community/) is unnecessarily difficult. Can't we just use [Docker](https://www.docker.com/get-started)?

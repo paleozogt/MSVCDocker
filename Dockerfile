@@ -21,9 +21,13 @@ ARG MSVC
 ENV MSVC=$MSVC
 ADD build/msvc$MSVC/snapshots snapshots
 
+RUN ls -la $HOME
+RUN ls -la $HOME/snapshots/*
+
 # import the msvc snapshot files
 RUN cd $WINEPREFIX/drive_c && \
-    unzip -n $HOME/snapshots/CMP/files.zip && \
+    unzip -n $HOME/snapshots/CMP/files.zip
+RUN cd $WINEPREFIX/drive_c && mkdir -p Windows && \
     cd $WINEPREFIX/drive_c/Windows && mkdir -p INF System32 SysWOW64 WinSxS && \
     mv INF      inf && \
     mv System32 system32 && \

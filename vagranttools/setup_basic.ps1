@@ -1,6 +1,3 @@
-# allow installers to execute
-Set-ExecutionPolicy -Force Bypass
-
 If ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
     $programFilesX86= ${env:ProgramFiles(x86)}
 } Else {

@@ -1,0 +1,145 @@
+trigger:
+    - "*"
+
+jobs:
+    - job: snapshot
+      timeoutInMinutes: 0
+      pool:
+          vmImage: win1803
+      variables:
+          VAGRANT: C:\HashiCorp\Vagrant\bin\vagrant.exe
+      strategy:
+          maxParallel: 10
+          matrix:
+              msvc9:
+                  MSVC: 9
+              msvc10:
+                  MSVC: 10
+              #msvc11:
+              #    MSVC: 11
+              #msvc12:
+              #    MSVC: 12
+              msvc14:
+                  MSVC: 14
+              msvc15:
+                  MSVC: 15
+              msvc16:
+                  MSVC: 16
+      steps:
+          # While we can't run vagrant/virtualbox directly due to nested virtualization limitations,
+          # we can at least run the scripts that would get executed by vagrant.
+          # This tests 90% of the snapshotting code.
+          # 
+          - powershell: vagranttools\setup_basic.ps1 
+
+          - script: vagranttools\snapshot.bat $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\SNAPSHOT-01
+          - script: dir $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\SNAPSHOT-01
+
+          - powershell: vagranttools\setup_msvc.ps1 -msvc_ver $(MSVC) -output_dir $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\SNAPSHOT-02
+
+          - script: vagranttools\snapshot.bat $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\SNAPSHOT-02
+          - script: dir $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\SNAPSHOT-02
+
+          - script: vagranttools\compare-snapshots.bat $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\SNAPSHOT-01 $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\SNAPSHOT-02 $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\CMP
+          - script: dir $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\CMP
+
+          - script: zip -r msvc$(MSVC)-snapshot.zip build
+          - task: PublishBuildArtifacts@1
+            inputs:
+                artifactName: msvc$(MSVC)-snapshot
+                pathtoPublish: msvc$(MSVC)-snapshot.zip
+
+    - job: wine
+      timeoutInMinutes: 0
+      pool:
+          vmImage: ubuntu-16.04
+      strategy:
+          maxParallel: 10
+      steps:
+          - script: make buildwine
+          - script: |
+                WINE_VER=$(docker images --format "{{.Tag}}" wine)
+                docker save wine:$WINE_VER | gzip > wine.tar.gz
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+                artifactName: wine
+                pathtoPublish: wine.tar.gz
+
+    - job: docker
+      timeoutInMinutes: 0
+      pool:
+          vmImage: ubuntu-16.04
+      strategy:
+          maxParallel: 10
+          matrix:
+              msvc9:
+                  MSVC: 9
+              msvc10:
+                  MSVC: 10
+              #msvc11:
+              #    MSVC: 11
+              #msvc12:
+              #    MSVC: 12
+              msvc14:
+                  MSVC: 14
+              msvc15:
+                  MSVC: 15
+              msvc16:
+                  MSVC: 16
+      steps:
+          # free up space
+          - script: df -h .
+          - script: |
+                docker rm $(docker ps -a -q)
+                docker rmi $(docker images -q) --force
+                docker system prune --all --force
+          - script: sudo rm -rf /usr/local/lib/android
+          - script: df -h .
+
+          - task: DownloadBuildArtifacts@0
+            inputs:
+                artifactName: wine
+                downloadPath: $(Build.Repository.LocalPath)
+          - script: ls -la $(Build.Repository.LocalPath)
+          - script: ls -la $(Build.Repository.LocalPath)/*
+          - script: gunzip -c $(Build.Repository.LocalPath)/wine/wine.tar.gz | docker load
+          - script: rm -rf wine
+          - script: df -h .
+
+          - task: DownloadBuildArtifacts@0
+            inputs:
+                artifactName: msvc$(MSVC)-snapshot
+                downloadPath: $(Build.Repository.LocalPath)
+          - script: ls -la $(Build.Repository.LocalPath)
+          - script: ls -la $(Build.Repository.LocalPath)/*
+          - script: find . -iname \*snapshot.zip
+          - script: find . -iname \*snapshot.zip | xargs -Ifile unzip -o file
+          - script: find . -iname \*snapshot.zip | xargs rm
+          - script: ls -la $(Build.Repository.LocalPath)/build
+          - script: df -h .
+
+          - script: make buildmsvc$(MSVC)
+          - script: docker images
+          - script: df -h .
+
+          - script: rm -rf build
+          - script: df -h .
+
+          - script: |
+                cd examples
+                make windev$(MSVC)
+          - script: docker images
+          - script: df -h .
+
+          - script: docker save msvc:$(MSVC) | gzip > msvc$(MSVC).tar.gz
+          - script: df -h .
+          - task: PublishBuildArtifacts@1
+            inputs:
+                artifactName: msvc$(MSVC)
+                pathtoPublish: msvc$(MSVC).tar.gz
+
+      dependsOn:
+          - snapshot
+          - wine
+      condition: succeeded()
