@@ -1,5 +1,5 @@
 MSVC_VERS = 15 14 12 11 10 9
-WINE_VER = 4.0
+WINE_VER = 4.0.2
 DOCKERCMD = docker
 VAGRANTCMD = vagrant
 VAGRANTARGS = 
@@ -13,13 +13,15 @@ define build-targets
 		vagrant halt win-msvc$1
 
   buildsnapshot$1: Vagrantfile
+		mkdir -p msvcdocker/build/msvc$1/snapshots build/msvc$1
+		ln -sf ../../msvcdocker/build/msvc$1/snapshots build/msvc$1/snapshots
 		$(VAGRANTCMD) up $(VAGRANTARGS) --provision win-msvc$1
 		$(VAGRANTCMD) halt win-msvc$1
 
   snapshot$1: vagrantsetup$1 buildsnapshot$1
 
-  buildimage$1: Dockerfile dockercheck
-		$(DOCKERCMD) build -f Dockerfile -t msvc:$1 --build-arg WINE_VER=$(WINE_VER) --build-arg MSVC=$1 .
+  buildimage$1: msvcdocker/Dockerfile dockercheck
+		cd msvcdocker && $(DOCKERCMD) build -f Dockerfile -t msvc:$1 --build-arg WINE_VER=$(WINE_VER) --build-arg MSVC=$1 .
 
   msvc$1: dockercheck snapshot$1 buildimage$1
 endef
@@ -29,7 +31,7 @@ $(foreach element,$(MSVC_VERS),$(eval $(call build-targets,$(element))))
 .PHONY: clean dockercheck
 
 clean:
-	rm -rf build/msvc*
+	rm -rf build/msvc* msvcdocker/build/msvc*
 	$(VAGRANTCMD) destroy --force || true
 	$(VAGRANTCMD) global-status --prune || true
 	VBoxManage list vms || true

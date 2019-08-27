@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 RUN dpkg --add-architecture i386 && \
     wget -nc https://dl.winehq.org/wine-builds/winehq.key && \
     apt-key add winehq.key && \
-    apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/ && \
+    apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main' && \
     rm *.key
 
 # install wine
@@ -21,6 +21,7 @@ ARG WINE_VER
 RUN apt-get update && apt-get install -y --install-recommends \
     winehq-stable=$WINE_VER~xenial \
  && rm -rf /var/lib/apt/lists/*
+# A failure at this point probably means that the $WINE_VER value is not supported.
 
 # install winetricks
 RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks && \
