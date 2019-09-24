@@ -13,14 +13,47 @@ RUN apt-get update && apt-get install -y \
 RUN dpkg --add-architecture i386 && \
     wget -nc https://dl.winehq.org/wine-builds/winehq.key && \
     apt-key add winehq.key && \
-    apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/ && \
+    apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main' && \
     rm *.key
 
-# install wine
+# install wine via wine-stable-xxx, as winehq-stable 
+# is broken for anything other than the latest version
+# see https://bugs.winehq.org/show_bug.cgi?id=47797
+#
 ARG WINE_VER
 RUN apt-get update && apt-get install -y --install-recommends \
-    winehq-stable=$WINE_VER~xenial \
+    wine-stable=$WINE_VER~xenial \
+    wine-stable-i386=$WINE_VER~xenial \
+    wine-stable-amd64=$WINE_VER~xenial \
  && rm -rf /var/lib/apt/lists/*
+
+# unlike winehq-stable, wine-stable doesn't setup symlinks
+RUN ln -s /opt/wine-stable/bin/function_grep.pl /usr/bin/function_grep.pl && \ 
+    ln -s /opt/wine-stable/bin/msiexec /usr/bin/msiexec && \ 
+    ln -s /opt/wine-stable/bin/notepad /usr/bin/notepad && \ 
+    ln -s /opt/wine-stable/bin/regedit /usr/bin/regedit && \ 
+    ln -s /opt/wine-stable/bin/regsvr32 /usr/bin/regsvr32 && \ 
+    ln -s /opt/wine-stable/bin/widl /usr/bin/widl && \ 
+    ln -s /opt/wine-stable/bin/wine /usr/bin/wine && \ 
+    ln -s /opt/wine-stable/bin/wine-preloader /usr/bin/wine-preloader && \ 
+    ln -s /opt/wine-stable/bin/wine64 /usr/bin/wine64 && \ 
+    ln -s /opt/wine-stable/bin/wine64-preloader /usr/bin/wine64-preloader && \ 
+    ln -s /opt/wine-stable/bin/wineboot /usr/bin/wineboot && \ 
+    ln -s /opt/wine-stable/bin/winebuild /usr/bin/winebuild && \ 
+    ln -s /opt/wine-stable/bin/winecfg /usr/bin/winecfg && \ 
+    ln -s /opt/wine-stable/bin/wineconsole /usr/bin/wineconsole && \ 
+    ln -s /opt/wine-stable/bin/winecpp /usr/bin/winecpp && \ 
+    ln -s /opt/wine-stable/bin/winedbg /usr/bin/winedbg && \ 
+    ln -s /opt/wine-stable/bin/winedump /usr/bin/winedump && \ 
+    ln -s /opt/wine-stable/bin/winefile /usr/bin/winefile && \ 
+    ln -s /opt/wine-stable/bin/wineg++ /usr/bin/wineg++ && \ 
+    ln -s /opt/wine-stable/bin/winegcc /usr/bin/winegcc && \ 
+    ln -s /opt/wine-stable/bin/winemaker /usr/bin/winemaker && \ 
+    ln -s /opt/wine-stable/bin/winemine /usr/bin/winemine && \ 
+    ln -s /opt/wine-stable/bin/winepath /usr/bin/winepath && \ 
+    ln -s /opt/wine-stable/bin/wineserver /usr/bin/wineserver && \ 
+    ln -s /opt/wine-stable/bin/wmc /usr/bin/wmc && \ 
+    ln -s /opt/wine-stable/bin/wrc /usr/bin/wrc
 
 # install winetricks
 RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks && \
