@@ -82,7 +82,7 @@ RUN winetricks win10
 ENV CLANG_HOME=/opt/bin
 ENV CC=clang-cl
 ENV CXX=clang-cl
-RUN wget https://releases.llvm.org/7.0.0/clang+llvm-7.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
+RUN wget https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
     tar xvf *.tar.xz && \
     cp -r clang*/* /opt && \
     rm -rf clang*
