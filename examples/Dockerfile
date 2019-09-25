@@ -1,20 +1,12 @@
 ARG MSVC
 FROM msvc:$MSVC
 
-# curl
-RUN apt-get update && apt-get install -y \
-    curl \
- && rm -rf /var/lib/apt/lists/*
-
 # java jdk in wine
-ADD get_oracle_jdk.sh get_oracle_jdk.sh
-RUN apt-get update && apt-get install -y curl && \
-    if [ "$MSVCARCH" -eq 32 ]; then JAVA_ARCH="i586"; else JAVA_ARCH="x64"; fi && \
-    ./get_oracle_jdk.sh 8 $JAVA_ARCH && \
-    wine jdk-8u202-windows-$JAVA_ARCH.exe /s INSTALLDIR=C:\\Java && \
-    rm -f get_oracle_jdk.sh *.exe && \
-    apt-get remove -y curl && \
-    rm -rf /var/lib/apt/lists/*
+RUN if [ "$MSVCARCH" -eq 32 ]; then JAVA_ARCH="x86-32"; else JAVA_ARCH="x64"; fi && \
+    wget https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u222-b10/OpenJDK8U-jdk_${JAVA_ARCH}_windows_hotspot_8u222b10.zip && \
+    unzip OpenJDK8U-jdk_${JAVA_ARCH}_windows_hotspot_8u222b10.zip && \
+    mv jdk8u222-b10 /opt/win/drive_c/Java && \
+    rm -f *.zip
 ENV WINEPATH="C:\\Java\\bin;$WINEPATH"
 RUN wine java -version
 RUN wine javac -version
