@@ -1,8 +1,10 @@
 @echo on
+set CURR_DRIVE=%CD:~0,2%
 set CURR_DIR=%CD%
 set SNAPSHOT_DIR=%1
 @echo snapshotting to %SNAPSHOT_DIR%
 
+%HOMEDRIVE%
 cd %HOMEDRIVE%\
 mkdir %SNAPSHOT_DIR%
 
@@ -36,4 +38,5 @@ fd -a -t f >> %SNAPSHOT_DIR%\files.txt
 @echo sorting file list
 sort %SNAPSHOT_DIR%\files.txt > %SNAPSHOT_DIR%\files-sorted.txt
 
+%CURR_DRIVE%
 cd %CURR_DIR%
