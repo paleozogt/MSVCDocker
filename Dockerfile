@@ -1,61 +1,5 @@
-FROM ubuntu:xenial as winebase
-USER root
-WORKDIR /root
-
-# install basics
-RUN apt-get update && apt-get install -y \
-    apt-transport-https \
-    software-properties-common \
-    wget \
- && rm -rf /var/lib/apt/lists/*
-
-# setup wine repo
-RUN dpkg --add-architecture i386 && \
-    wget -nc https://dl.winehq.org/wine-builds/winehq.key && \
-    apt-key add winehq.key && \
-    apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main' && \
-    rm *.key
-
-# install wine
 ARG WINE_VER
-RUN apt-get update && apt-get install -y --install-recommends \
-    winehq-stable=$WINE_VER~xenial \
-    wine-stable=$WINE_VER~xenial \
-    wine-stable-amd64=$WINE_VER~xenial \
-    wine-stable-i386=$WINE_VER~xenial \
- && rm -rf /var/lib/apt/lists/*
-
-# install winetricks
-RUN wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks && \
-    chmod +x /usr/local/bin/winetricks
-
-# tools used by wine
-RUN apt-get update && apt-get install -y \
-    cabextract \
-    dos2unix \
-    p7zip-full \
-    winbind \
-    zip \
- && rm -rf /var/lib/apt/lists/*
-
-# setup wine
-ENV WINEARCH win64
-ENV WINEPREFIX=/opt/win
-RUN winetricks win10
-RUN wine cmd.exe /c echo '%ProgramFiles%'
-
-# dotnet in wine
-RUN winetricks -q dotnet472
-RUN winetricks win10
-
-# install clang on host (for clang-cl)
-ENV CLANG_HOME=/opt/bin
-ENV CC=clang-cl
-ENV CXX=clang-cl
-RUN wget https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
-    tar xvf *.tar.xz && \
-    cp -r clang*/* /opt && \
-    rm -rf clang*
+FROM wine:$WINE_VER
 
 # clang-cl shims
 RUN mkdir /etc/vcclang && \
@@ -71,32 +15,6 @@ RUN mkdir /etc/vcwine && \
     touch /etc/vcwine/vcvars32 && \
     touch /etc/vcwine/vcvars64
 ADD dockertools/vcwine /usr/local/bin/vcwine
-
-# make a tools dir
-RUN mkdir -p $WINEPREFIX/drive_c/tools/bin
-ENV WINEPATH C:\\tools\\bin
-
-# install which in wine (for easy path debugging)
-RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
-    cd "$WINEPREFIX/drive_c/tools" && \
-    unzip $HOME/which.zip && \
-    rm $HOME/which.zip
-RUN vcwine which --version
-
-# turn off wine's verbose logging
-ENV WINEDEBUG=-all
-
-# entrypoint
-ENV MSVCARCH=64
-ADD dockertools/vcentrypoint /usr/local/bin/vcentrypoint
-ENTRYPOINT [ "/usr/local/bin/vcentrypoint" ]
-
-# reboot for luck
-RUN winetricks win10
-RUN wineboot -r
-
-#################################
-FROM winebase as msvc
 
 # bring over the msvc snapshots
 ARG MSVC
@@ -141,13 +59,6 @@ RUN find $WINEPREFIX -name Include -execdir mv Include include \; || \
     find $WINEPREFIX -name Lib -execdir mv Lib lib \; || \
     find $WINEPREFIX -name \*.Lib -execdir rename 'y/A-Z/a-z/' {} \;
 
-# get _MSC_VER for use with clang-cl
-ADD dockertools/msc_ver.cpp msc_ver.cpp
-RUN vcwine cl msc_ver.cpp && \
-    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars32  && \
-    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars64  && \
-    rm *.cpp
-
 # make sure we can compile with MSVC
 ADD test test
 RUN cd test && \
@@ -155,6 +66,13 @@ RUN cd test && \
     MSVCARCH=64 vcwine cl helloworld.cpp && vcwine helloworld.exe && \
     vcwine cl helloworld.cpp && vcwine helloworld.exe && \
     cd .. && rm -rf test
+
+# get _MSC_VER for use with clang-cl
+ADD dockertools/msc_ver.cpp msc_ver.cpp
+RUN vcwine cl msc_ver.cpp && \
+    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars32  && \
+    echo -n "MSC_VER=`vcwine msc_ver.exe`" >> /etc/vcclang/vcvars64  && \
+    rm *.cpp
 
 # make sure we can compile with clang-cl
 ADD test test
@@ -165,3 +83,8 @@ RUN cd test && \
 # reboot for luck
 RUN winetricks win10
 RUN wineboot -r
+
+# entrypoint
+ENV MSVCARCH=64
+ADD dockertools/vcentrypoint /usr/local/bin/vcentrypoint
+ENTRYPOINT [ "/usr/local/bin/vcentrypoint" ]
