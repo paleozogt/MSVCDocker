@@ -29,8 +29,9 @@ If ($msvc_ver -eq "9") {
     $dotNetFullVer    = $(Get-ItemProperty -Path $dotNetFullPath).Version
 
     # hack the dotnet version to make the Windows SDK installer happy
-    subinacl.exe /subkeyreg "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\NET Framework Setup\NDP\v4" /setowner="$env:UserName"
-    subinacl.exe /subkeyreg "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\NET Framework Setup\NDP\v4" /grant="$env:UserName"=f
+    $subinacl = "$programFilesX86\Windows Resource Kits\Tools\subinacl.exe"
+    & $subinacl /subkeyreg "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\NET Framework Setup\NDP\v4" /setowner="$env:UserName"
+    & $subinacl /subkeyreg "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\NET Framework Setup\NDP\v4" /grant="$env:UserName"=f
     reg ADD "HKLM\Software\Microsoft\NET Framework Setup\NDP\v4\Full" /v Version /t REG_SZ /d 4.0.30319 /reg:32 /f
     reg ADD "HKLM\Software\Microsoft\NET Framework Setup\NDP\v4\Client" /v Version /t REG_SZ /d 4.0.30319 /reg:32 /f
 
