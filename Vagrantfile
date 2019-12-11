@@ -4,7 +4,7 @@
 Vagrant.require_version ">= 2.1.4"
 
 # plugin checks
-required_plugins = %w(vagrant-reload)
+required_plugins = %w(vagrant-reload winrm winrm-elevated)
 required_plugins.each do |plugin|
     raise "\"#{plugin}\" plugin is not installed!" unless Vagrant.has_plugin? plugin
 end
