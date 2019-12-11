@@ -10,7 +10,7 @@ buildwine: Dockerfile dockercheck
 define build-targets
   vagrantsetup$1: Vagrantfile setupbasebox
 		FIRSTBOOT=1 $(VAGRANTCMD) up $(VAGRANTARGS) win-msvc$1
-		vagrant halt win-msvc$1
+		$(VAGRANTCMD) halt win-msvc$1
 
   buildsnapshot$1: Vagrantfile
 		$(VAGRANTCMD) up $(VAGRANTARGS) --provision win-msvc$1
@@ -35,7 +35,7 @@ clean:
 	VBoxManage list vms || true
 
 dockercheck:
-	docker images
+	$(DOCKERCMD) images
 
 setupbasebox: ./vagranttools/setupbasebox.sh
 	./vagranttools/setupbasebox.sh
