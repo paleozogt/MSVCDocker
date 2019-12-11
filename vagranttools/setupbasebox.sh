@@ -6,6 +6,9 @@
 baseboxinfo=`vagrant box list -i | grep Microsoft/EdgeOnWindows10 | grep ' 0)'`
 echo $baseboxinfo
 
+# make sure we successful execute commands
+set -e
+
 if [ -z "$baseboxinfo" ]
 then
     mkdir -p build
