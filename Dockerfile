@@ -165,3 +165,7 @@ RUN cd test && \
 # reboot for luck
 RUN winetricks win10
 RUN wineboot -r
+
+RUN groupadd --gid 1000 wine \
+    && useradd --uid 1000 --gid wine --shell /bin/bash --create-home wine \
+    && chown -R wine:wine $WINEPREFIX
