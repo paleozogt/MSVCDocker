@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:xenial as winebase
 USER root
 WORKDIR /root
 
@@ -65,6 +65,12 @@ ENV WINEDEBUG=-all
 # reboot for luck
 RUN winetricks win10
 RUN wineboot -r
+
+ENTRYPOINT [ "/usr/bin/wine", "cmd", "/c" ]
+CMD [ "cmd" ]
+
+#################################
+FROM winebase as clangbase
 
 # install clang on host (for clang-cl)
 ENV CLANG_HOME=/opt/bin
