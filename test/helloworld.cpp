@@ -20,6 +20,8 @@ int main() {
         arch="arm";
     #elif defined(__aarch64__) || defined(_M_ARM64)
         arch="arm64";
+    #elif defined(__PPC64__)
+        arch="ppc64";
     #endif
 
     std::string compiler= "unknown";
