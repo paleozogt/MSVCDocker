@@ -2,6 +2,13 @@ FROM ubuntu:xenial as winebase
 USER root
 WORKDIR /root
 
+# make a wine user/group
+ARG WINE_UID=1000
+ARG WINE_GID=1000
+RUN groupadd --gid $WINE_GID wine && \
+    adduser --uid $WINE_UID --gid $WINE_GID --gecos "" --disabled-password wine
+WORKDIR /home/wine
+
 # install basics
 RUN apt-get update && apt-get install -y \
     apt-transport-https \
@@ -41,6 +48,8 @@ RUN apt-get update && apt-get install -y \
 # setup wine
 ENV WINEARCH win64
 ENV WINEPREFIX=/opt/win
+RUN mkdir -p $WINEPREFIX && chown -R wine:wine $WINEPREFIX
+USER wine
 RUN winetricks win10
 RUN wine cmd.exe /c echo '%ProgramFiles%'
 
@@ -76,7 +85,9 @@ FROM winebase as clangbase
 ENV CLANG_HOME=/opt/bin
 ENV CC=clang-cl
 ENV CXX=clang-cl
+USER root
 RUN wget https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
     tar xvf *.tar.xz && \
     cp -r clang*/* /opt && \
     rm -rf clang*
+USER wine

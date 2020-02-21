@@ -34,16 +34,20 @@ RUN echo 'puts $tcl_version' > test.tcl && \
     rm *.tcl
 
 # make on host
+USER root
 RUN apt-get update && apt-get install -y \
     make \
  && rm -rf /var/lib/apt/lists/*
+USER wine
 
 # cmake on host
+USER root
 ARG CMAKE_SERIES_VER=3.12
 ARG CMAKE_VERS=$CMAKE_SERIES_VER.1
 RUN wget https://cmake.org/files/v$CMAKE_SERIES_VER/cmake-$CMAKE_VERS-Linux-x86_64.sh -O cmake.sh && \
-    sh $HOME/cmake.sh --prefix=/usr/local --skip-license && \
-    rm -rf $HOME/cmake*
+    sh cmake.sh --prefix=/usr/local --skip-license && \
+    rm -rf cmake*
+USER wine
 RUN cmake --version
 
 # cmake in wine
@@ -61,7 +65,7 @@ RUN wget http://download.qt.io/official_releases/jom/jom.zip -O jom.zip && \
 RUN vcwine jom /VERSION
 
 # make sure we build the example proj
-ADD test test
+ADD --chown=wine:wine test test
 RUN mkdir test/.build && cd test/.build && \
     if [ "$MSVC" -gt "10" ] ; then vcwine cmake .. -DCMAKE_BUILD_TYPE=RELEASE -G "NMake Makefiles JOM" && vcwine jom ; fi && \
-    cd .. && rm -rf test
+    cd ../.. && rm -rf test
