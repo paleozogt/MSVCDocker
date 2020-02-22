@@ -5,20 +5,14 @@ VAGRANTCMD = vagrant
 VAGRANTARGS = 
 
 define build-targets
-  vagrantsetup$1: Vagrantfile setupbasebox
-		FIRSTBOOT=1 $(VAGRANTCMD) up $(VAGRANTARGS) win-msvc$1
-		$(VAGRANTCMD) halt win-msvc$1
-
-  buildsnapshot$1: Vagrantfile
+  buildsnapshot$1: Vagrantfile setupbasebox
 		$(VAGRANTCMD) up $(VAGRANTARGS) --provision win-msvc$1
 		$(VAGRANTCMD) halt win-msvc$1
-
-  snapshot$1: vagrantsetup$1 buildsnapshot$1
 
   buildmsvc$1: Dockerfile dockercheck
 		$(DOCKERCMD) build -f Dockerfile -t msvc:$1 --build-arg WINE_VER=$(WINE_VER) --build-arg MSVC=$1 .
 
-  msvc$1: dockercheck snapshot$1 buildwine buildmsvc$1
+  msvc$1: dockercheck buildsnapshot$1 buildwine buildmsvc$1
 endef
 
 $(foreach element,$(MSVC_VERS),$(eval $(call build-targets,$(element))))

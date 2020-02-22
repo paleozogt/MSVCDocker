@@ -50,49 +50,29 @@ Vagrant.configure("2") do |config|
                 end
             end
 
-            if ENV['FIRSTBOOT']
-                # fortunately the basebox has SSH running
-                vmconfig.vm.communicator = "ssh"
+            vmconfig.vm.communicator = "winrm"
 
-                # turn off firewall
-                vmconfig.vm.provision "ssh", inline: 'powershell "Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private"'
-                vmconfig.vm.provision "ssh", inline: 'powershell "NetSh Advfirewall set allprofiles state off" '
+            vmconfig.vm.provision "shell", path: "vagranttools/setup_basic.ps1"
 
-                # turn off UAC
-                vmconfig.vm.provision "ssh", inline: 'cmd /c "reg add HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System /v EnableLUA /d 0 /t REG_DWORD /f /reg:64"'
+            outputdir = "\\\\vboxsvr\\vagrant\\msvc#{msvc}\\snapshots"
+            snapshot1dir= "#{outputdir}\\SNAPSHOT-01"
+            snapshot2dir= "#{outputdir}\\SNAPSHOT-02"
+            cmpdir= "#{outputdir}\\CMP"
 
-                # turn on winrm on startup
-                startup_folder = "/cygdrive/c/Users/#{vmconfig.ssh.username}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup"
-                winrm_config = 'cmd /k C:\\Windows\\System32\\winrm.cmd quickconfig --force -quiet'
-                vmconfig.vm.provision "ssh", inline: "echo '#{winrm_config}' > '#{startup_folder}/winrm_config.bat'"
+            vmconfig.vm.provision "shell", path: "vagranttools/snapshot.bat", args: [ snapshot1dir ]
 
-                # shutdown
-                vmconfig.vm.provision "ssh", inline: 'shutdown -t 0 -s -f'
+            if msvc == "test"
+                vmconfig.vm.provision "shell", inline: "choco install -y firefox"
             else
-                vmconfig.vm.communicator = "winrm"
-
-                vmconfig.vm.provision "shell", path: "vagranttools/setup_basic.ps1"
-
-                outputdir = "\\\\vboxsvr\\vagrant\\msvc#{msvc}\\snapshots"
-                snapshot1dir= "#{outputdir}\\SNAPSHOT-01"
-                snapshot2dir= "#{outputdir}\\SNAPSHOT-02"
-                cmpdir= "#{outputdir}\\CMP"
-
-                vmconfig.vm.provision "shell", path: "vagranttools/snapshot.bat", args: [ snapshot1dir ]
-
-                if msvc == "test"
-                    vmconfig.vm.provision "shell", inline: "choco install -y firefox"
-                else
-                    vmconfig.vm.provision "shell", path: "vagranttools/setup_msvc.ps1", 
-                                                   args: [ "-msvc_ver", msvc, "-output_dir", snapshot2dir ]
-                end
-                vmconfig.vm.provision :reload
-
-                vmconfig.vm.provision "shell", path: "vagranttools/snapshot.bat", args: [ snapshot2dir ]
-
-                vmconfig.vm.provision "shell", path: "vagranttools/compare-snapshots.bat", 
-                                               args: [ snapshot1dir, snapshot2dir, cmpdir ]
+                vmconfig.vm.provision "shell", path: "vagranttools/setup_msvc.ps1", 
+                                               args: [ "-msvc_ver", msvc, "-output_dir", snapshot2dir ]
             end
+            vmconfig.vm.provision :reload
+
+            vmconfig.vm.provision "shell", path: "vagranttools/snapshot.bat", args: [ snapshot2dir ]
+
+            vmconfig.vm.provision "shell", path: "vagranttools/compare-snapshots.bat", 
+                                           args: [ snapshot1dir, snapshot2dir, cmpdir ]
         end
     end
 end
