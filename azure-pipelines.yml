@@ -1,7 +1,36 @@
+# While we can't run vagrant/virtualbox directly due to nested virtualization limitations,
+# we can at least run the scripts that would get executed by vagrant.
+# This tests 90% of the snapshotting code.
+# 
+
 trigger:
     - "*"
 
 jobs:
+    - job: download
+      timeoutInMinutes: 0
+      pool:
+          vmImage: ubuntu-16.04
+      steps:
+          - script: ./vagranttools/downloadbasebox.sh
+
+    - job: wine
+      timeoutInMinutes: 0
+      pool:
+          vmImage: ubuntu-16.04
+      strategy:
+          maxParallel: 10
+      steps:
+          - script: make buildwine
+          - script: |
+                WINE_VER=$(docker images --format "{{.Tag}}" wine)
+                docker save wine:$WINE_VER | gzip > wine.tar.gz
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+                artifactName: wine
+                pathtoPublish: wine.tar.gz
+
     - job: snapshot
       timeoutInMinutes: 0
       pool:
@@ -26,10 +55,6 @@ jobs:
               msvc16:
                   MSVC: 16
       steps:
-          # While we can't run vagrant/virtualbox directly due to nested virtualization limitations,
-          # we can at least run the scripts that would get executed by vagrant.
-          # This tests 90% of the snapshotting code.
-          # 
           - powershell: vagranttools\setup_basic.ps1 
 
           - script: vagranttools\snapshot.bat $(Build.Repository.LocalPath)\build\msvc$(MSVC)\snapshots\SNAPSHOT-01
@@ -48,23 +73,6 @@ jobs:
             inputs:
                 artifactName: msvc$(MSVC)-snapshot
                 pathtoPublish: msvc$(MSVC)-snapshot.zip
-
-    - job: wine
-      timeoutInMinutes: 0
-      pool:
-          vmImage: ubuntu-16.04
-      strategy:
-          maxParallel: 10
-      steps:
-          - script: make buildwine
-          - script: |
-                WINE_VER=$(docker images --format "{{.Tag}}" wine)
-                docker save wine:$WINE_VER | gzip > wine.tar.gz
-
-          - task: PublishBuildArtifacts@1
-            inputs:
-                artifactName: wine
-                pathtoPublish: wine.tar.gz
 
     - job: docker
       timeoutInMinutes: 0
@@ -140,6 +148,7 @@ jobs:
                 pathtoPublish: msvc$(MSVC).tar.gz
 
       dependsOn:
-          - snapshot
+          - download
           - wine
+          - snapshot
       condition: succeeded()

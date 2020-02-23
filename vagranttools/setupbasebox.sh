@@ -1,28 +1,19 @@
 #!/usr/bin/env bash
  
-# Microsoft's "Microsoft/EdgeOnWindows10" vagrant cloud image is out of date, so we have to jump through hoops.
-# See https://github.com/MicrosoftEdge/dev.microsoftedge.com-vms/issues/22
-#
-# If this url goes stale, check for updates on https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/
-#
-box_url='https://az792536.vo.msecnd.net/vms/VMBuild_20190311/Vagrant/MSEdge/MSEdge.Win10.Vagrant.zip'
+source `dirname $0`/box_env
 
-baseboxinfo=`vagrant box list -i | grep Microsoft/EdgeOnWindows10 | grep ' 0)'`
+baseboxinfo=`vagrant box list -i | grep $box_name | grep ' 0)'`
 echo $baseboxinfo
 
-# make sure we successful execute commands
 set -e
 
 if [ -z "$baseboxinfo" ]
 then
-    mkdir -p build
-
-    if [ ! -f "build/MSEdge - Win10.box" ]; then
-        wget ${box_url} -O build/MSEdge.Win10.Vagrant.zip
-        unzip -d build build/MSEdge.Win10.Vagrant.zip
-        test -f "build/MSEdge - Win10.box" && rm build/MSEdge.Win10.Vagrant.zip
+    if [ ! -f "$box_file" ]; then
+        `dirname $0`/downloadbasebox.sh
     fi
 
-    vagrant box add --force "build/MSEdge - Win10.box" --name "Microsoft/EdgeOnWindows10"
+    vagrant box add --force "$box_file" --name "$box_name"
     vagrant box list
+    test -f "$box_file" && rm "$box_file"
 fi

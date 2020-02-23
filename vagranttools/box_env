@@ -1,0 +1,10 @@
+# Microsoft's "Microsoft/EdgeOnWindows10" vagrant cloud image is out of date, so we have to jump through hoops.
+# See https://github.com/MicrosoftEdge/dev.microsoftedge.com-vms/issues/22
+#
+# If this url goes stale, check for updates on https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/
+#
+box_url='https://az792536.vo.msecnd.net/vms/VMBuild_20190311/Vagrant/MSEdge/MSEdge.Win10.Vagrant.zip'
+
+box_name='Microsoft/EdgeOnWindows10'
+box_zip='build/MSEdge.Win10.Vagrant.zip'
+box_file='build/MSEdge - Win10.box'
