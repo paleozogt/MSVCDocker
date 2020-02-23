@@ -102,6 +102,8 @@ jobs:
                 docker rm $(docker ps -a -q)
                 docker rmi $(docker images -q) --force
                 docker system prune --all --force
+          - script: sudo apt-get clean
+          - script: sudo rm -rf /opt/ghc
           - script: sudo rm -rf /usr/local/lib/android
           - script: df -h .
 
@@ -138,7 +140,11 @@ jobs:
                 cd examples
                 make windev$(MSVC)
           - script: docker images
+
+          # free up space
           - script: df -h .
+          - script: docker rmi windev:$(MSVC)
+          - script: df -h
 
           - script: docker save msvc:$(MSVC) | gzip > msvc$(MSVC).tar.gz
           - script: df -h .
