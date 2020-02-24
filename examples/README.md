@@ -16,7 +16,7 @@ make windev15
 
 Now setup a shortcut to use our image:
 ```
-function vcwine() { docker run -v$HOME:/host/$HOME -w/host/$PWD -u 1000:$(id -g) -eMSVCARCH=$MSVCARCH --rm -t -i windev:15 "$@"; }
+function vcwine() { docker run -v$HOME:/host/$HOME -w/host/$PWD -u $(id -u):$(id -g) -eMSVCARCH=$MSVCARCH --rm -t -i windev:15 "$@"; }
 ```
 
 Then we can build the example project using CMake and JOM:

@@ -2,9 +2,12 @@ FROM ubuntu:xenial as winebase
 USER root
 WORKDIR /root
 
-# make a wine user/group
 ARG WINE_UID=1000
 ARG WINE_GID=1000
+ARG WINE_UMASK=000
+ENV WINE_UMASK=$WINE_UMASK
+
+# make a wine user/group
 RUN groupadd --gid $WINE_GID wine && \
     adduser --uid $WINE_UID --gid $WINE_GID --gecos "" --disabled-password wine
 WORKDIR /home/wine
@@ -48,34 +51,40 @@ RUN apt-get update && apt-get install -y \
 # setup wine
 ENV WINEARCH win64
 ENV WINEPREFIX=/opt/win
-RUN mkdir -p $WINEPREFIX && chown -R wine:wine $WINEPREFIX
+RUN umask $WINE_UMASK && mkdir -p $WINEPREFIX && chown -R wine:wine $WINEPREFIX
 USER wine
-RUN winetricks win10
-RUN wine cmd.exe /c echo '%ProgramFiles%'
+RUN umask $WINE_UMASK && winetricks win10
+RUN umask $WINE_UMASK && wine cmd.exe /c echo '%ProgramFiles%'
+RUN ls -l $WINEPREFIX
 
 # dotnet in wine
-RUN winetricks -q dotnet472
-RUN winetricks win10
+RUN umask $WINE_UMASK && winetricks -q dotnet472
+RUN umask $WINE_UMASK && winetricks win10
 
 # make a tools dir
-RUN mkdir -p $WINEPREFIX/drive_c/tools/bin
+RUN umask $WINE_UMASK && mkdir -p $WINEPREFIX/drive_c/tools/bin
 ENV WINEPATH C:\\tools\\bin
 
 # install which in wine (for easy path debugging)
-RUN wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
+RUN umask $WINE_UMASK && \
+    wget http://downloads.sourceforge.net/gnuwin32/which-2.20-bin.zip -O which.zip && \
     cd "$WINEPREFIX/drive_c/tools" && \
     unzip $HOME/which.zip && \
     rm $HOME/which.zip
-RUN wine which --version
+RUN umask $WINE_UMASK && wine which --version
 
 # turn off wine's verbose logging
 ENV WINEDEBUG=-all
 
-# reboot for luck
-RUN winetricks win10
-RUN wineboot -r
+# support for mult-user wine
+ADD dockertools/wineexec /usr/local/bin/wine
+ADD dockertools/wineexec /usr/local/bin/wine64
 
-ENTRYPOINT [ "/usr/bin/wine", "cmd", "/c" ]
+# reboot for luck
+RUN umask $WINE_UMASK && winetricks win10
+RUN umask $WINE_UMASK && wineboot -r
+
+ENTRYPOINT [ "/usr/bin/wine64", "cmd", "/c" ]
 CMD [ "cmd" ]
 
 #################################

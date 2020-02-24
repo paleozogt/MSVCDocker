@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# multi-user wine can be done by making a new WINEPREFIX that refers to the original via symlinks owned by the user
+WINEPREFIXMAIN=$WINEPREFIX
+WINEPREFIX=/tmp/$UID
+if [ ! -d "$WINEPREFIX" ]; then
+    mkdir -p $WINEPREFIX
+    ln -s $WINEPREFIXMAIN/* $WINEPREFIX/
+fi
+
+# call through to the exe
+/opt/wine-stable/bin/`basename $0` "$@"
