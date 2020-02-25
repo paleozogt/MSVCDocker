@@ -44,10 +44,10 @@ jobs:
                   MSVC: 9
               msvc10:
                   MSVC: 10
-              #msvc11:
-              #    MSVC: 11
-              #msvc12:
-              #    MSVC: 12
+              msvc11:
+                  MSVC: 11
+              msvc12:
+                  MSVC: 12
               msvc14:
                   MSVC: 14
               msvc15:
@@ -85,10 +85,10 @@ jobs:
                   MSVC: 9
               msvc10:
                   MSVC: 10
-              #msvc11:
-              #    MSVC: 11
-              #msvc12:
-              #    MSVC: 12
+              msvc11:
+                  MSVC: 11
+              msvc12:
+                  MSVC: 12
               msvc14:
                   MSVC: 14
               msvc15:
