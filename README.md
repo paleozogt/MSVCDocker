@@ -148,16 +148,6 @@ For more examples, including the use of CMake and high-level language bindings, 
 
   It appears that `/Users/...` is getting mistaken for a cl flag `/U`.
 
-* The container cannot be run under an arbitrary UID.  It must be run as user `1000`.  For example, lets say your UID is `1001`.  If you try to run the container under that UID you'll see this error:
-  ```
-  docker run -v $HOME:$HOME -w $PWD --rm -it -u$(id -u) msvc:15 cl test/helloworld.cpp
-  wine: /opt/win is not owned by you
-  ```
-
-  The reason is a limitation of Wine-- read more about it [here](https://wiki.winehq.org/FAQ#Can_I_install_applications_to_be_shared_by_multiple_users.3F).
-
-  See the above `vcwine` shell function for how the container should be invoked.  
-
 ## References
  * https://hackernoon.com/a-c-hello-world-and-a-glass-of-wine-oh-my-263434c0b8ad
  * https://dekken.github.io/2015/12/29/MSVC2015-on-Debian-with-Wine-and-Maiken.html
