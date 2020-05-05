@@ -7,4 +7,4 @@ box_url='https://az792536.vo.msecnd.net/vms/VMBuild_20190311/Vagrant/MSEdge/MSEd
 
 box_name='Microsoft/EdgeOnWindows10'
 box_zip='build/MSEdge.Win10.Vagrant.zip'
-box_file='build/MSEdge - Win10.box'
+box_file='build/MSEdge-Win10.box'
