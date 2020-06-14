@@ -1,6 +1,6 @@
 MSVC_VERS = 16 15 14 12 11 10 9
 WINE_VER = 4.0
-DOCKERCMD = docker
+DOCKERCMD ?= docker
 VAGRANTCMD = vagrant
 VAGRANTARGS = 
 
