@@ -97,7 +97,7 @@ ENV CXX=clang-cl
 ARG CLANG_VER=9.0.0
 USER root
 RUN wget https://releases.llvm.org/$CLANG_VER/clang+llvm-$CLANG_VER-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
-    tar xvf *.tar.xz && \
+    tar xvf *.tar.xz --no-same-owner && \
     cp -r clang*/* /opt && \
     rm -rf clang*
 USER wine
