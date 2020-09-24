@@ -46,11 +46,18 @@ $regdiffArchivePath="C:\Windows\Temp\$regdiffArchive"
 $regdiffUrl="http://p-nand-q.com/download/$regdiffArchive"
 echo $regdiffUrl
 (New-Object System.Net.WebClient).DownloadFile($regdiffUrl, $regdiffArchivePath)
-7z x $regdiffArchivePath
-cp $regdiffName/* C:\ProgramData\chocolatey\bin\
-rm -r -fo $regdiffArchivePath
-rm -r -fo $regdiffName
-which regdiff
+$regdiffHash = (Get-FileHash $regdiffArchivePath -Algorithm MD5).Hash
+$regdiffExpectedHash = "E5F910DA1EF3402653EAB4D4D8DC428F"
+echo checking hashes $regdiffHash =? $regdiffExpectedHash
+If ($regdiffHash -eq $regdiffExpectedHash) {
+    7z x $regdiffArchivePath
+    cp $regdiffName/* C:\ProgramData\chocolatey\bin\
+    rm -r -fo $regdiffArchivePath
+    rm -r -fo $regdiffName
+    which regdiff
+}  Else {
+    echo "ERROR: regdiff hash doesn't match!"
+}
 
 # subinacl (sadly not in choco)
 $subinaclName="subinacl.msi"
@@ -59,9 +66,16 @@ $subinaclArchivePath="C:\Windows\Temp\$subinaclArchive"
 $subinaclUrl="https://web.archive.org/web/20190830103837/https://download.microsoft.com/download/1/7/d/17d82b72-bc6a-4dc8-bfaa-98b37b22b367/$subinaclArchive"
 echo $subinaclUrl
 (New-Object System.Net.WebClient).DownloadFile($subinaclUrl, $subinaclArchivePath)
-Start-Process -FilePath msiexec -ArgumentList '/i',"$subinaclArchivePath",'/q' -Wait
-rm -r -fo $subinaclArchivePath
-$env:Path= "$programFilesX86\Windows Resource Kits\Tools\;$env:Path"
-[Environment]::SetEnvironmentVariable("Path", "$env:Path", "Machine")
-refreshenv
-which subinacl
+$subinaclHash = (Get-FileHash $subinaclArchivePath -Algorithm MD5).Hash
+$subinaclExpectedHash = "B23D3E0E4BE5BA7DA3F0F12E327751CD"
+echo checking hashes $subinaclHash =? $subinaclExpectedHash
+If ($subinaclHash -eq $subinaclExpectedHash) {
+    Start-Process -FilePath msiexec -ArgumentList '/i',"$subinaclArchivePath",'/q' -Wait
+    rm -r -fo $subinaclArchivePath
+    $env:Path= "$programFilesX86\Windows Resource Kits\Tools\;$env:Path"
+    [Environment]::SetEnvironmentVariable("Path", "$env:Path", "Machine")
+    refreshenv
+    which subinacl
+}  Else {
+    echo "ERROR: subinacl hash doesn't match!"
+}
