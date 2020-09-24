@@ -94,9 +94,9 @@ FROM winebase as clangbase
 ENV CLANG_HOME=/opt/bin
 ENV CC=clang-cl
 ENV CXX=clang-cl
-ARG CLANG_VER=9.0.0
+ARG CLANG_VER=10.0.1
 USER root
-RUN wget https://releases.llvm.org/$CLANG_VER/clang+llvm-$CLANG_VER-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
+RUN wget https://github.com/llvm/llvm-project/releases/download/llvmorg-$CLANG_VER/clang+llvm-$CLANG_VER-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
     tar xvf *.tar.xz && \
     cp -r clang*/* /opt && \
     rm -rf clang*
