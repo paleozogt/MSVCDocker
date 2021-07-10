@@ -1,4 +1,4 @@
-FROM ubuntu:xenial as winebase
+FROM ubuntu:focal as winebase
 USER root
 WORKDIR /root
 
@@ -23,16 +23,16 @@ RUN apt-get update && apt-get install -y \
 RUN dpkg --add-architecture i386 && \
     wget -nc https://dl.winehq.org/wine-builds/winehq.key && \
     apt-key add winehq.key && \
-    apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main' && \
+    apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main' && \
     rm *.key
 
 # install wine
 ARG WINE_VER
 RUN apt-get update && apt-get install -y --install-recommends \
-    winehq-stable=$WINE_VER~xenial \
-    wine-stable=$WINE_VER~xenial \
-    wine-stable-amd64=$WINE_VER~xenial \
-    wine-stable-i386=$WINE_VER~xenial \
+    winehq-staging=$WINE_VER~focal-1 \
+    wine-staging=$WINE_VER~focal-1 \
+    wine-staging-amd64=$WINE_VER~focal-1 \
+    wine-staging-i386=$WINE_VER~focal-1 \
  && rm -rf /var/lib/apt/lists/*
 
 # install winetricks
@@ -94,9 +94,9 @@ FROM winebase as clangbase
 ENV CLANG_HOME=/opt/bin
 ENV CC=clang-cl
 ENV CXX=clang-cl
-ARG CLANG_VER=10.0.1
+ARG CLANG_VER=12.0.0
 USER root
-RUN wget https://github.com/llvm/llvm-project/releases/download/llvmorg-$CLANG_VER/clang+llvm-$CLANG_VER-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
+RUN wget https://github.com/llvm/llvm-project/releases/download/llvmorg-$CLANG_VER/clang+llvm-$CLANG_VER-x86_64-linux-gnu-ubuntu-20.04.tar.xz && \
     tar xvf *.tar.xz && \
     cp -r clang*/* /opt && \
     rm -rf clang*

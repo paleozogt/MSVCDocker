@@ -66,11 +66,17 @@ RUN umask $WINE_UMASK && \
     find $WINEPREFIX/drive_c -iname win\*.bat | xargs -Ifile $HOME/hackvcvars "file" && \
     rm hackvcvars
 
+USER root
+RUN apt-get -y update && apt-get -y install rename
+USER wine
+
 # fix inconsistent casing in msvc filenames
 RUN umask $WINE_UMASK && \
     find $WINEPREFIX -name Include -execdir mv Include include \; || \
     find $WINEPREFIX -name Lib -execdir mv Lib lib \; || \
-    find $WINEPREFIX -name \*.Lib -execdir rename 'y/A-Z/a-z/' {} \;
+    find $WINEPREFIX -name \*.Lib -execdir rename 'y/A-Z/a-z/' {} \; || \
+    find $WINEPREFIX -name \*.Lib -exec rename 'y/A-Z/a-z/' {} \; || \
+    find $WINEPREFIX -iname vctip.exe -exec rm {} \;
 
 # make sure we can compile with MSVC
 ADD --chown=wine:wine test test
